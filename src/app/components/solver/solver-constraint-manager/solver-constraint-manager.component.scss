@@ -1,0 +1,16 @@
+mat-select-trigger {
+  display: flex;
+  align-items: center;
+}
+
+.list-option-text {
+  vertical-align: super;
+}
+
+.editable {
+  all: inherit;
+  &:hover {
+    outline: 2px dashed;
+    cursor: text;
+  }
+}

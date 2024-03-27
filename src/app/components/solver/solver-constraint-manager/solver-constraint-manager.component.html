@@ -1,0 +1,78 @@
+<div>Active constraint: {{ activeConstraint()?.name }}</div>
+<div>Active view: {{ activeView()?.name }}</div>
+<div>Active cell group: {{ activeGroup()?.name }}</div>
+<mat-form-field>
+  <mat-label>Choose constraint</mat-label>
+  <mat-select
+    hideSingleSelectionIndicator
+    [(value)]="selectedConstraint"
+    (selectionChange)="onConstraintSelectionChange()"
+  >
+    <mat-select-trigger
+      ><button
+        mat-icon-button
+        (click)="onAddViewToSelectedConstraintClick($event)"
+      >
+        <mat-icon fontIcon="add"></mat-icon>
+      </button>
+      {{ selectedConstraint?.name }}</mat-select-trigger
+    >
+    @for (constraint of constraints.values(); track constraint.name) {
+    <mat-option [value]="constraint" class="wide-text-mixin">
+      <span> {{ constraint.name }} </span>
+      <span>
+        @if (constraint.views.length > 0) {
+        <button
+          mat-icon-button
+          (click)="onClearConstraintClick($event, constraint)"
+        >
+          <mat-icon fontIcon="clear"></mat-icon>
+        </button>
+        }
+      </span>
+    </mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+
+<mat-accordion>
+  @for(view of selectedConstraint?.views; track view) {
+  <mat-expansion-panel (opened)="onViewOpened(view)" (closed)="onViewClosed()">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <button mat-icon-button (click)="onDeleteViewClick($event, view)">
+          <mat-icon fontIcon="delete"></mat-icon>
+        </button>
+        <button mat-icon-button (click)="onAddGroupClick($event, view)">
+          <mat-icon fontIcon="add"></mat-icon>
+        </button>
+        <input
+          [ngModel]="view.name"
+          (ngModelChange)="onViewNameChange($event, view)"
+          (keydown)="$event.stopPropagation()"
+          class="editable"
+        />
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-selection-list
+      [multiple]="false"
+      (selectionChange)="onGroupSelection($event)"
+    >
+      @for(group of view.groups; track group) {
+      <mat-list-option
+        [value]="group"
+        [selected]="selectedGroup.isSelected(group)"
+        ><button mat-icon-button (click)="onDeleteGroupClick($event, group)">
+          <mat-icon fontIcon="remove"></mat-icon></button
+        ><span class="list-option-text">
+          <input
+            [ngModel]="group.name"
+            (ngModelChange)="onGroupNameChange($event, group)"
+            (keydown)="$event.stopPropagation()"
+            class="editable" /></span
+      ></mat-list-option>
+      }
+    </mat-selection-list>
+  </mat-expansion-panel>
+  }
+</mat-accordion>
