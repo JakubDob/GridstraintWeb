@@ -1,0 +1,47 @@
+<div class="container">
+  <ngx-canvas-grid
+    [cellWidth]="cellWidth"
+    [cellHeight]="cellHeight"
+    [rows]="rows"
+    [cols]="cols"
+    [spacing]="spacing"
+    [cellRenderFn]="cellRenderFn"
+    (singleClickCellEvent)="onClickCell($event)"
+    (dragCellEvent)="onDragCell($event)"
+    (keyDownEvent)="onKeyDown($event)"
+  ></ngx-canvas-grid>
+</div>
+<div class="sliders">
+  <div class="slider">
+    Rows ({{ rows }})
+    <input
+      type="range"
+      min="1"
+      max="50"
+      [(ngModel)]="rows"
+      (change)="onRowsChange()"
+    />
+  </div>
+  <div class="slider">
+    Cols ({{ cols }})
+    <input
+      type="range"
+      min="1"
+      max="50"
+      [(ngModel)]="cols"
+      (change)="onColsChange()"
+    />
+  </div>
+  <div class="slider">
+    Cell width ({{ cellWidth }})
+    <input type="range" min="1" max="100" [(ngModel)]="cellWidth" />
+  </div>
+  <div class="slider">
+    Cell height ({{ cellHeight }})
+    <input type="range" min="1" max="100" [(ngModel)]="cellHeight" />
+  </div>
+  <div class="slider">
+    Spacing ({{ spacing }})
+    <input type="range" min="0" max="10" [(ngModel)]="spacing" />
+  </div>
+</div>

@@ -1,0 +1,27 @@
+.container {
+  // width: max(min(80vw, 80vh), 400px);
+  // height: max(min(80vw, 80vh), 400px);
+  width: fit-content;
+  border: 2px solid black;
+  padding: 0;
+  line-height: 0;
+}
+
+.sliders {
+  display: flex;
+  justify-content: left;
+}
+
+.slider {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  display: block;
+}
+
+ngx-canvas-grid {
+  --canvas-background: blue;
+  --canvas-cursor: pointer;
+}
