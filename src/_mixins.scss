@@ -1,0 +1,10 @@
+@mixin mat-option-item-spaced {
+  .mat-mdc-option {
+    &.wide-text-mixin .mdc-list-item__primary-text {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
