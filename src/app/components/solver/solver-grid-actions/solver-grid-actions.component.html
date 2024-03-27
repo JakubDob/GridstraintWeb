@@ -1,0 +1,12 @@
+<mat-card>
+  <mat-card-content>
+    <button
+      mat-flat-button
+      (click)="onClickEreaser()"
+      [color]="solverState.ereaserToggled() ? 'warn' : ''"
+    >
+      Ereaser
+    </button>
+    <button mat-flat-button (click)="onClickTile()">Tile</button>
+  </mat-card-content>
+</mat-card>
