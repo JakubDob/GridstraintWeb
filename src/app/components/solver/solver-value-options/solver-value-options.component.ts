@@ -1,4 +1,4 @@
-import { Component, inject, NgZone } from '@angular/core';
+import { Component, computed, inject, NgZone } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -21,11 +21,18 @@ export class SolverValueOptionsComponent {
   selectedCellValue?: number;
   disableInput: boolean = true;
 
+  private solutionViewEnabled = computed(
+    () => this.solverState.activeSolution() !== null
+  );
+
   constructor() {
     this.solverState.activeCellIndexChanged$
       .pipe(takeUntilDestroyed())
       .subscribe((data: ValueChange<number>) => {
         this.ngZone.run(() => {
+          if (this.solutionViewEnabled()) {
+            return;
+          }
           if (data.current !== null) {
             this.disableInput = false;
             const value = this.solverState.values.get(data.current);
@@ -62,6 +69,9 @@ export class SolverValueOptionsComponent {
   }
 
   onSelectedCellValueChange(value: number | null) {
+    if (this.solutionViewEnabled()) {
+      return;
+    }
     const cellIndex = this.solverState.activeCellIndex();
     if (cellIndex !== null) {
       this.solverState.setValue(

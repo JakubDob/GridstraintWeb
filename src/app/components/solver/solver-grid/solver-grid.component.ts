@@ -109,6 +109,12 @@ export class SolverGridComponent {
       .subscribe((data: IndexedValueChange<string>) => {
         this.canvasGrid.addCellIndexToSingleFrameRedraw(data.index);
       });
+
+    this.solverState.activeSolutionChanged$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.canvasGrid.redrawAll();
+      });
   }
 
   @ViewChild(NgxCanvasGridComponent) canvasGrid!: NgxCanvasGridComponent;
@@ -118,8 +124,6 @@ export class SolverGridComponent {
   rows: number = this._defaults?.rows ?? 9;
   cols: number = this._defaults?.cols ?? 9;
   spacing = this._defaults?.spacing ?? 1;
-  testVar: string = '';
-  offscreenCanvas = document.createElement('canvas');
 
   private defaultBackgroundColor = 'white';
   private selectBorder: Border = {
@@ -147,6 +151,9 @@ export class SolverGridComponent {
     }
     return null;
   });
+  private solutionViewEnabled = computed(
+    () => this.solverState.activeSolution() !== null
+  );
 
   cellRenderFn: CanvasGridCellRenderFn = (p: CanvasGridCellRenderParams) => {
     const group = this.solverState
@@ -189,14 +196,9 @@ export class SolverGridComponent {
       );
     }
 
-    // let value = this.solutionViewActive
-    //   ? this.solverState.activeSolution?.values.at(p.cellIndex)
-    //   : this.solverState.values.get(p.cellIndex);
-
-    let value = this.solverState.values.get(p.cellIndex);
-    if (value === undefined) {
-      value = '';
-    }
+    let value = this.solverState.activeSolution()
+      ? this.solverState.activeSolution()?.values.at(p.cellIndex)
+      : this.solverState.values.get(p.cellIndex);
 
     if (value) {
       p.renderTextFn({
@@ -217,7 +219,6 @@ export class SolverGridComponent {
   }
 
   onClickCell(event: GridClickEvent) {
-    this.canvasGrid.clearIndicesFromMultiFrameRedraw();
     if (event.buttonId === 0) {
       if (this.canvasGrid.draggingButtonId() === null) {
         if (this.solverState.activeCellIndex() === event.cellIndex) {
@@ -238,6 +239,9 @@ export class SolverGridComponent {
   }
 
   onKeyDown(key: string) {
+    if (this.solutionViewEnabled()) {
+      return;
+    }
     const i = this.solverState.activeCellIndex();
     if (i !== null) {
       const oldValue = this.solverState.values.get(i);

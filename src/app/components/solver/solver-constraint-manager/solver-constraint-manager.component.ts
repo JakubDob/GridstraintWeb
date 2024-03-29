@@ -16,6 +16,7 @@ import {
   GridView,
 } from '../../../types/solver-types';
 import { ConstraintProviderService } from '../../../services/constraint/constraint-provider.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-solver-constraint-manager',
@@ -47,11 +48,19 @@ export class SolverConstraintManagerComponent {
   activeView = this.solverState.activeView;
   activeGroup = this.solverState.activeCellGroup;
 
+  constructor() {
+    this.solverState.activeCellGroupChanged$
+      .pipe(takeUntilDestroyed())
+      .subscribe((change) => {
+        if (change.current === null) {
+          this.selectedGroup.clear();
+        }
+      });
+  }
+
   onConstraintSelectionChange() {
     if (this.selectedConstraint) {
       this.solverState.setActiveConstraint(this.selectedConstraint.name);
-      this.solverState.setActiveView(null);
-      this.solverState.setActiveGroup(null);
     }
   }
 
@@ -103,13 +112,10 @@ export class SolverConstraintManagerComponent {
   }
 
   onViewOpened(view: GridView) {
-    this.selectedGroup.clear();
     this.solverState.setActiveView(view);
-    this.solverState.setActiveGroup(null);
   }
 
   onViewClosed() {
-    this.selectedGroup.clear();
     this.solverState.setActiveGroup(null);
   }
 

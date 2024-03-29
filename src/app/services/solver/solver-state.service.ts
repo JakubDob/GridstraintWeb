@@ -12,6 +12,8 @@ import {
   GridSize,
   GridView,
   IndexedValueChange,
+  Solution,
+  SolvedProblemInstance,
   SolvingMethod,
   ValueChange,
   ValueRange,
@@ -30,6 +32,7 @@ export class SolverStateService {
   private readonly _activeView = signal<GridView | null>(null);
   private readonly _activeCellGroup = signal<CellGroup | null>(null);
   private readonly _activeCellIndex = signal<CellIndex | null>(null);
+  private readonly _activeSolution = signal<Solution | null>(null);
   private readonly _gridSize = signal<GridSize>({
     rows: this.defaults?.rows ?? 9,
     cols: this.defaults?.cols ?? 9,
@@ -38,9 +41,10 @@ export class SolverStateService {
   private readonly _solvingMethod = signal<SolvingMethod>(
     SolvingMethod.SATISFY
   );
-  private _findAllSolutions = signal<boolean>(false);
-  private _timeout = signal<number>(5);
-  private _problemName = signal<string>('');
+  private readonly _findAllSolutions = signal<boolean>(false);
+  private readonly _timeout = signal<number>(5);
+  private readonly _problemName = signal<string>('');
+  private readonly _solvedProblemInstances: SolvedProblemInstance[] = [];
 
   private readonly activeCellGroupSubject = new Subject<
     ValueChange<CellGroup>
@@ -52,6 +56,9 @@ export class SolverStateService {
   private readonly cellRemovedFromGroupSubject =
     new Subject<CellGroupAndIndex>();
   private readonly cellValueSubject = new Subject<IndexedValueChange<string>>();
+  private readonly activeSolutionChangedSubject = new Subject<
+    ValueChange<Solution>
+  >();
 
   readonly ereaserToggled = this._ereaserToggled.asReadonly();
   readonly activeView = this._activeView.asReadonly();
@@ -65,6 +72,7 @@ export class SolverStateService {
   readonly findAllSolutions = this._findAllSolutions.asReadonly();
   readonly timeout = this._timeout.asReadonly();
   readonly problemName = this._problemName.asReadonly();
+  readonly activeSolution = this._activeSolution.asReadonly();
 
   readonly activeCellGroupChanged$ = this.activeCellGroupSubject.asObservable();
   readonly activeViewChanged$ = this.activeViewSubject.asObservable();
@@ -74,6 +82,8 @@ export class SolverStateService {
   readonly cellRemovedFromGroup$ =
     this.cellRemovedFromGroupSubject.asObservable();
   readonly cellValueChanged$ = this.cellValueSubject.asObservable();
+  readonly activeSolutionChanged$ =
+    this.activeSolutionChangedSubject.asObservable();
 
   get constraints(): ReadonlyMap<string, GridConstraint> {
     return this._constraints;
@@ -81,6 +91,55 @@ export class SolverStateService {
 
   get values(): ReadonlyMap<CellIndex, string> {
     return this._values;
+  }
+
+  getSolvedProblemInstances(): ReadonlyArray<SolvedProblemInstance> {
+    return this._solvedProblemInstances;
+  }
+
+  deleteSolution(solution: Solution) {
+    const parentSolutions = solution.parent.solutions;
+    const index = parentSolutions.indexOf(solution);
+    if (index >= 0) {
+      if (solution === this._activeSolution()) {
+        this.setActiveSolution(null);
+      }
+      parentSolutions.splice(index, 1);
+    }
+  }
+
+  setActiveSolution(solution: Solution | null) {
+    this._activeSolution.update((prev) => {
+      if (solution !== prev) {
+        if (solution !== null) {
+          this.setActiveView(null);
+        }
+        this.activeSolutionChangedSubject.next({
+          current: solution,
+          previous: prev,
+        });
+        return solution;
+      }
+      return prev;
+    });
+  }
+
+  addSolvedProblemInstance(instance: SolvedProblemInstance) {
+    this._solvedProblemInstances.push(instance);
+  }
+
+  deleteSolvedProblemInstance(instance: SolvedProblemInstance) {
+    const index = this._solvedProblemInstances.indexOf(instance);
+    if (index >= 0) {
+      if (
+        instance.solutions.find(
+          (solution) => solution === this._activeSolution()
+        )
+      ) {
+        this.setActiveSolution(null);
+      }
+      this._solvedProblemInstances.splice(index, 1);
+    }
   }
 
   toggleEreaser() {
@@ -154,37 +213,61 @@ export class SolverStateService {
   }
 
   setActiveConstraint(name: string) {
-    this._activeConstraint.set(this._constraints.get(name) ?? null);
+    this._activeConstraint.update((prev) => {
+      const constraint = this._constraints.get(name);
+      if (constraint && constraint !== prev) {
+        this.setActiveView(null);
+        return constraint;
+      }
+      return prev;
+    });
   }
 
   setActiveView(view: GridView | null) {
-    if (this._activeView() !== view) {
-      this.activeViewSubject.next({
-        current: view,
-        previous: this._activeView(),
-      });
-    }
-    this._activeView.set(view);
+    this._activeView.update((prev) => {
+      if (view !== prev) {
+        if (view === null) {
+          this.setActiveGroup(null);
+        } else {
+          this.setActiveSolution(null);
+        }
+        this.activeViewSubject.next({
+          current: view,
+          previous: prev,
+        });
+        return view;
+      }
+      return prev;
+    });
   }
 
   setActiveGroup(group: CellGroup | null) {
-    if (this._activeCellGroup() !== group) {
-      this.activeCellGroupSubject.next({
-        current: group,
-        previous: this._activeCellGroup(),
-      });
-    }
-    this._activeCellGroup.set(group);
+    this._activeCellGroup.update((prev) => {
+      if (group !== prev) {
+        if (group !== null) {
+          this.setActiveView(group.parent);
+        }
+        this.activeCellGroupSubject.next({
+          current: group,
+          previous: prev,
+        });
+        return group;
+      }
+      return prev;
+    });
   }
 
   setActiveCellIndex(index: number | null) {
-    if (this._activeCellIndex() !== index) {
-      this.activeCellIndexSubject.next({
-        current: index,
-        previous: this._activeCellIndex(),
-      });
-    }
-    this._activeCellIndex.set(index);
+    this._activeCellIndex.update((prev) => {
+      if (index !== prev) {
+        this.activeCellIndexSubject.next({
+          current: index,
+          previous: prev,
+        });
+        return index;
+      }
+      return prev;
+    });
   }
 
   deleteGroup(group: CellGroup) {
@@ -206,8 +289,11 @@ export class SolverStateService {
     if (av === view) {
       this.setActiveView(null);
     }
-    view.groups.forEach((group) => this.deleteGroup(group));
-    view.parent.views.splice(view.parent.views.indexOf(view), 1);
+    const index = view.parent.views.indexOf(view);
+    if (index >= 0) {
+      view.groups.forEach((group) => this.deleteGroup(group));
+      view.parent.views.splice(index, 1);
+    }
   }
 
   addNewGroup(view: GridView) {
@@ -343,5 +429,35 @@ export class SolverStateService {
         views: [],
       });
     }
+    const problemA: SolvedProblemInstance = {
+      name: 'FirstProblem',
+      solutions: [],
+    };
+    problemA.solutions.push({
+      name: 'First solution to first problem',
+      parent: problemA,
+      values: ['1', '2', '3', '4'],
+    });
+    problemA.solutions.push({
+      name: 'Second solution to first problem',
+      parent: problemA,
+      values: ['0', '0', '1', '2', '3', '4'],
+    });
+    const problemB: SolvedProblemInstance = {
+      name: 'SecondProblem',
+      solutions: [],
+    };
+    problemB.solutions.push({
+      name: 'FirstSolution to second problem',
+      parent: problemB,
+      values: ['10', '20', '30', '40'],
+    });
+    problemB.solutions.push({
+      name: 'SecondSolution to second problem',
+      parent: problemB,
+      values: ['0', '0', '10', '20', '30', '40'],
+    });
+    this._solvedProblemInstances.push(problemA);
+    this._solvedProblemInstances.push(problemB);
   }
 }

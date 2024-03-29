@@ -70,3 +70,14 @@ export type IndexedValueChange<T> = {
   previous: T | null;
   current: T | null;
 };
+
+export type Solution = {
+  name: string;
+  values: string[];
+  parent: SolvedProblemInstance;
+};
+
+export type SolvedProblemInstance = {
+  name: string;
+  solutions: Solution[];
+};
