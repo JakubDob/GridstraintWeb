@@ -87,12 +87,13 @@ export class SolverConstraintManagerComponent {
       const details = this.constraintProvider.get(constraintName);
       if (details) {
         if (details.hasSettings) {
-          details.toSolverCode(new Set<number>());
           this.dialog
             .open(details.constraint)
             .afterClosed()
-            .subscribe((settings: ReadonlyMap<string, string>) => {
-              this.solverState.addNewViewToActiveConstraint(settings);
+            .subscribe((settings?: ReadonlyMap<string, string>) => {
+              if (settings) {
+                this.solverState.addNewViewToActiveConstraint(settings);
+              }
             });
         } else {
           this.solverState.addNewViewToActiveConstraint();

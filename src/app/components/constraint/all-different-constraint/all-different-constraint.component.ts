@@ -8,12 +8,15 @@ import { SolverConstraint } from '../../../types/solver-types';
   templateUrl: './all-different-constraint.component.html',
   styleUrl: './all-different-constraint.component.scss',
 })
-export class AllDifferentConstraintComponent implements SolverConstraint {
+export class AllDifferentConstraintComponent extends SolverConstraint {
   static toSolverCode(
-    cells: ReadonlySet<number>,
+    indices: ReadonlySet<number>,
     settings?: ReadonlyMap<string, string> | undefined
   ): string {
-    return 'not implemented alldifferent';
+    SolverConstraint.gridVarName;
+    return `constraint alldifferent(${SolverConstraint.wrapSetInBrackets(
+      indices
+    )});`;
   }
 
   static hasSettings(): boolean {

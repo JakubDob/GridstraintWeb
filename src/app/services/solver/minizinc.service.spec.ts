@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { MinizincService } from './minizinc.service';
+import { MiniZincService } from './minizinc.service';
 
-describe('MinizincService', () => {
-  let service: MinizincService;
+describe('MiniZincService', () => {
+  let service: MiniZincService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(MinizincService);
+    service = TestBed.inject(MiniZincService);
   });
 
   it('should be created', () => {

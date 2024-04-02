@@ -14,6 +14,7 @@ import {
   IndexedValueChange,
   Solution,
   SolvedProblemInstance,
+  SolverConstraint,
   SolvingMethod,
   ValueChange,
   ValueRange,
@@ -37,7 +38,7 @@ export class SolverStateService {
     rows: this.defaults?.rows ?? 9,
     cols: this.defaults?.cols ?? 9,
   });
-  private readonly _valueRange = signal<ValueRange>({ min: 0, max: 10 });
+  private readonly _valueRange = signal<ValueRange>({ min: 0, max: 8 });
   private readonly _solvingMethod = signal<SolvingMethod>(
     SolvingMethod.SATISFY
   );
@@ -385,6 +386,37 @@ export class SolverStateService {
       .forEach((group) => this.deleteGroup(group));
   }
 
+  getSolverCode(): string {
+    const gridLen = this._gridSize().cols * this._gridSize().rows - 1;
+    const prelude = `include "globals.mzn";\narray [0..${gridLen}] of var ${
+      this._valueRange().min
+    }..${this._valueRange().max}: ${SolverConstraint.gridVarName};\n`;
+    const codes: string[] = [];
+    codes.push(SolverConstraint.valueConstraint(this._values));
+    const solverConstraints = this.constraintProvider.getAll();
+    for (let [name, solverConstraint] of solverConstraints) {
+      const gridConstraint = this._constraints.get(name);
+      if (gridConstraint) {
+        gridConstraint.views.forEach((view) => {
+          this.deleteEmptyGroups(view);
+          view.groups.forEach((group) => {
+            const code = solverConstraint.toSolverCode(
+              group.indices,
+              view.settings
+            );
+            codes.push(code);
+          });
+        });
+      }
+    }
+    let method = 'solve ' + this.solvingMethod();
+    if (this.solvingMethod() !== SolvingMethod.SATISFY) {
+      method += ` sum(${SolverConstraint.gridVarName})`;
+    }
+    method += ';\n';
+    return prelude + codes.join('\n') + method;
+  }
+
   clearConstraintViews(constraint: GridConstraint) {
     const views = this._constraints.get(constraint.name)?.views;
     if (views?.find((view) => view === this._activeView())) {
@@ -392,30 +424,6 @@ export class SolverStateService {
       this.setActiveGroup(null);
     }
     views?.splice(0, views.length);
-  }
-
-  createTestCellGroup(name: string, parent: GridView): CellGroup {
-    return {
-      backgroundColor: getRandomColor(),
-      indices: new Set(),
-      name: name,
-      parent: parent,
-    };
-  }
-
-  createTestGridView(name: string, parent: GridConstraint): GridView {
-    const builtView: GridView = {
-      parent: parent,
-      groups: [],
-      indexToCellGroup: new Map(),
-      name: name,
-    };
-    for (let i = 0; i < 9; ++i) {
-      builtView.groups.push(
-        this.createTestCellGroup(name + '_group' + i, builtView)
-      );
-    }
-    return builtView;
   }
 
   constructor(
@@ -429,35 +437,5 @@ export class SolverStateService {
         views: [],
       });
     }
-    const problemA: SolvedProblemInstance = {
-      name: 'FirstProblem',
-      solutions: [],
-    };
-    problemA.solutions.push({
-      name: 'First solution to first problem',
-      parent: problemA,
-      values: ['1', '2', '3', '4'],
-    });
-    problemA.solutions.push({
-      name: 'Second solution to first problem',
-      parent: problemA,
-      values: ['0', '0', '1', '2', '3', '4'],
-    });
-    const problemB: SolvedProblemInstance = {
-      name: 'SecondProblem',
-      solutions: [],
-    };
-    problemB.solutions.push({
-      name: 'FirstSolution to second problem',
-      parent: problemB,
-      values: ['10', '20', '30', '40'],
-    });
-    problemB.solutions.push({
-      name: 'SecondSolution to second problem',
-      parent: problemB,
-      values: ['0', '0', '10', '20', '30', '40'],
-    });
-    this._solvedProblemInstances.push(problemA);
-    this._solvedProblemInstances.push(problemB);
   }
 }

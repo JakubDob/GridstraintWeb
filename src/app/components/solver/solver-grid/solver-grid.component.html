@@ -4,8 +4,11 @@
     [cellHeight]="cellHeight"
     [rows]="rows"
     [cols]="cols"
-    [spacing]="spacing"
+    [gapSize]="gapSize"
+    [gapColor]="gapColor"
     [cellRenderFn]="cellRenderFn"
+    [verticalGapFn]="gapFn"
+    [horizontalGapFn]="gapFn"
     (singleClickCellEvent)="onClickCell($event)"
     (dragCellEvent)="onDragCell($event)"
     (keyDownEvent)="onKeyDown($event)"
@@ -41,7 +44,7 @@
     <input type="range" min="1" max="100" [(ngModel)]="cellHeight" />
   </div>
   <div class="slider">
-    Spacing ({{ spacing }})
-    <input type="range" min="0" max="10" [(ngModel)]="spacing" />
+    Gap ({{ gapSize }})
+    <input type="range" min="0" max="10" [(ngModel)]="gapSize" />
   </div>
 </div>

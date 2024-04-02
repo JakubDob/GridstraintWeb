@@ -16,8 +16,8 @@ import { IndexedValueChange, ValueChange } from '../../../types/solver-types';
 export class SolverValueOptionsComponent {
   private solverState = inject(SolverStateService);
   private ngZone = inject(NgZone);
-  minValue: number = 0;
-  maxValue: number = 10;
+  minValue: number = this.solverState.valueRange().min;
+  maxValue: number = this.solverState.valueRange().max;
   selectedCellValue?: number;
   disableInput: boolean = true;
 

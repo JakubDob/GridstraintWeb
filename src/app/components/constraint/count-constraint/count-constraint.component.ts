@@ -21,7 +21,7 @@ import { RelationSymbol, SolverConstraint } from '../../../types/solver-types';
   templateUrl: './count-constraint.component.html',
   styleUrl: './count-constraint.component.scss',
 })
-export class CountConstraintComponent implements SolverConstraint {
+export class CountConstraintComponent extends SolverConstraint {
   private dialogRef = inject(
     MatDialogRef<ReadonlyMap<string, string>, CountConstraintComponent>
   );
@@ -35,6 +35,7 @@ export class CountConstraintComponent implements SolverConstraint {
       ['amount', this.amount.toString()],
       ['countedValue', this.countedValue.toString()],
       ['label', `count(${this.countedValue}) ${this.relation} ${this.amount}`],
+      ['relation', this.relation],
     ]);
     this.dialogRef.close(ret);
   }
@@ -47,10 +48,14 @@ export class CountConstraintComponent implements SolverConstraint {
   }
 
   static toSolverCode(
-    cells: ReadonlySet<number>,
+    indices: ReadonlySet<number>,
     settings?: ReadonlyMap<string, string> | undefined
   ): string {
-    return 'not implemented count';
+    return `constraint count(${SolverConstraint.wrapSetInBrackets(
+      indices
+    )},${settings?.get('countedValue')})${settings?.get(
+      'relation'
+    )}${settings?.get('amount')};`;
   }
 
   static hasSettings(): boolean {

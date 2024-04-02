@@ -1,4 +1,26 @@
-export interface SolverConstraint {}
+export class SolverConstraint {
+  static readonly gridVarName = 'a';
+  static wrapSetInBrackets(indices: ReadonlySet<number>) {
+    let result = '[';
+    indices.forEach((i) => {
+      result += SolverConstraint.wrapNumberInBrackets(i) + ',';
+    });
+    result = result.slice(0, -1);
+    result += ']';
+    return result;
+  }
+  static wrapNumberInBrackets(index: number) {
+    return `${SolverConstraint.gridVarName}[${index}]`;
+  }
+
+  static valueConstraint(indices: ReadonlyMap<CellIndex, string>) {
+    let result = '';
+    for (let [index, value] of indices) {
+      result += `constraint ${this.wrapNumberInBrackets(index)}=${value};\n`;
+    }
+    return result;
+  }
+}
 
 export type SolverConstraintDetails = {
   constraint: new () => SolverConstraint;
@@ -80,4 +102,10 @@ export type Solution = {
 export type SolvedProblemInstance = {
   name: string;
   solutions: Solution[];
+};
+
+export type MiniZincCmdParams = {
+  solver?: string;
+  'time-limit'?: number;
+  'all-solutions'?: boolean;
 };

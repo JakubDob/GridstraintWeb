@@ -17,7 +17,8 @@ export const appConfig: ApplicationConfig = {
       useValue: <CanvasGridDefaultOptions>{
         cols: 9,
         rows: 9,
-        spacing: 1,
+        gapSize: 1,
+        gapColor: 'black',
         cellWidth: 40,
         cellHeight: 40,
       },

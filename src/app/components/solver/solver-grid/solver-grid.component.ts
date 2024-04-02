@@ -13,6 +13,7 @@ import {
   CanvasGridCellRenderFn,
   CanvasGridCellRenderParams,
   CanvasGridDefaultOptions,
+  CanvasGridGapFn,
   CANVAS_GRID_DEFAULT_OPTIONS,
   GridClickEvent,
   GridDragEvent,
@@ -123,9 +124,10 @@ export class SolverGridComponent {
   cellHeight: number = this._defaults?.cellHeight ?? 20;
   rows: number = this._defaults?.rows ?? 9;
   cols: number = this._defaults?.cols ?? 9;
-  spacing = this._defaults?.spacing ?? 1;
+  gapSize = this._defaults?.gapSize ?? 1;
+  gapColor = this._defaults?.gapColor ?? 'black';
 
-  private defaultBackgroundColor = 'white';
+  private defaultBackgroundColor = 'lightblue';
   private selectBorder: Border = {
     color: 'magenta',
     style: '',
@@ -154,6 +156,10 @@ export class SolverGridComponent {
   private solutionViewEnabled = computed(
     () => this.solverState.activeSolution() !== null
   );
+
+  gapFn: CanvasGridGapFn = (gapNumber: number) => {
+    return gapNumber % 3 === 0;
+  };
 
   cellRenderFn: CanvasGridCellRenderFn = (p: CanvasGridCellRenderParams) => {
     const group = this.solverState
@@ -204,7 +210,9 @@ export class SolverGridComponent {
       p.renderTextFn({
         cellRect: p.cellRect,
         color: this.valueTextStyle.color,
-        font: this.valueTextStyle.font,
+        font: `${
+          Math.min(p.cellRect.h, p.cellRect.w / (value.length * 0.5)) * 0.9
+        }px monospace`,
         text: value,
       });
     }
