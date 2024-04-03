@@ -27,6 +27,7 @@ import { ConstraintProviderService } from '../constraint/constraint-provider.ser
 })
 export class SolverStateService {
   private readonly _ereaserToggled = signal<boolean>(false);
+  private readonly _ereaserClearValues = signal<boolean>(false);
   private readonly _constraints: Map<string, GridConstraint> = new Map();
   private readonly _values: Map<CellIndex, string> = new Map();
   private readonly _activeConstraint = signal<GridConstraint | null>(null);
@@ -62,6 +63,7 @@ export class SolverStateService {
   >();
 
   readonly ereaserToggled = this._ereaserToggled.asReadonly();
+  readonly ereaserClearValues = this._ereaserClearValues.asReadonly();
   readonly activeView = this._activeView.asReadonly();
 
   readonly activeConstraint = this._activeConstraint.asReadonly();
@@ -145,6 +147,10 @@ export class SolverStateService {
 
   toggleEreaser() {
     this._ereaserToggled.update((value) => !value);
+  }
+
+  setEreaseValues(value: boolean) {
+    this._ereaserClearValues.set(value);
   }
 
   setProblemName(value: string) {
@@ -414,7 +420,7 @@ export class SolverStateService {
       method += ` sum(${SolverConstraint.gridVarName})`;
     }
     method += ';\n';
-    return prelude + codes.join('\n') + method;
+    return prelude + codes.join('\n') + '\n' + method;
   }
 
   clearConstraintViews(constraint: GridConstraint) {

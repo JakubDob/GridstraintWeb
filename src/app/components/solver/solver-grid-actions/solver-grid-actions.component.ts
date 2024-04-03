@@ -1,6 +1,8 @@
 import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { PriorityQueue } from '../../../ds/ProrityQueue';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 
@@ -12,15 +14,20 @@ type GridSize = {
 @Component({
   selector: 'app-solver-grid-actions',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule],
+  imports: [MatButtonModule, MatCardModule, MatCheckboxModule, FormsModule],
   templateUrl: './solver-grid-actions.component.html',
   styleUrl: './solver-grid-actions.component.scss',
 })
 export class SolverGridActionsComponent {
   solverState = inject(SolverStateService);
+  ereaseValues = false;
 
   onClickEreaser() {
     this.solverState.toggleEreaser();
+  }
+
+  onChangedEreaseValues(value: boolean) {
+    this.solverState.setEreaseValues(value);
   }
 
   onClickTile() {

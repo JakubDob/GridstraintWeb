@@ -141,9 +141,14 @@ export class SolverGridComponent {
   private solverState = inject(SolverStateService);
   private cellEreaserAction = computed(() => {
     if (this.solverState.ereaserToggled()) {
-      return this.solverState.removeCellIndexFromActiveView.bind(
-        this.solverState
-      );
+      return (cellIndex: number) => {
+        this.solverState.removeCellIndexFromActiveView.bind(this.solverState)(
+          cellIndex
+        );
+        if (this.solverState.ereaserClearValues()) {
+          this.solverState.setValue(cellIndex, null);
+        }
+      };
     } else {
       if (this.solverState.activeCellGroup()) {
         return this.solverState.addCellIndexToActiveGroup.bind(

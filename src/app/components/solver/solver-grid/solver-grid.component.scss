@@ -8,6 +8,8 @@
 }
 
 .sliders {
+  max-width: min-content;
+  flex-direction: column;
   display: flex;
   justify-content: left;
 }

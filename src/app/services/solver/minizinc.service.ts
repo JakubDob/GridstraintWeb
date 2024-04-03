@@ -13,7 +13,7 @@ export class MiniZincService {
   private currentModel?: MiniZinc.Model;
   private currentSolveProgress?: MiniZinc.SolveProgress;
   private _isRunning = signal<boolean>(false);
-  private defaultSolver = 'coin-bc';
+  private defaultSolver = 'Chuffed';
   readonly isRunning = this._isRunning.asReadonly();
 
   solve(

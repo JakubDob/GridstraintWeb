@@ -1,12 +1,20 @@
 <mat-card>
   <mat-card-content>
-    <button
-      mat-flat-button
-      (click)="onClickEreaser()"
-      [color]="solverState.ereaserToggled() ? 'warn' : ''"
-    >
-      Ereaser
-    </button>
+    <div>
+      <button
+        mat-flat-button
+        (click)="onClickEreaser()"
+        [color]="solverState.ereaserToggled() ? 'warn' : ''"
+      >
+        Ereaser
+      </button>
+      <mat-checkbox
+        [(ngModel)]="ereaseValues"
+        (ngModelChange)="onChangedEreaseValues($event)"
+        >Clear values</mat-checkbox
+      >
+    </div>
+
     <button mat-flat-button (click)="onClickTile()">Tile</button>
   </mat-card-content>
 </mat-card>
