@@ -1,11 +1,10 @@
-<div>Active solution: {{ activeSolution()?.name }}</div>
 <mat-accordion>
   @for(problem of problems; track problem.solutions) {
   <mat-expansion-panel (closed)="onProblemClosed()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <button mat-icon-button (click)="onDeleteProblemClick($event, problem)">
-          <mat-icon fontIcon="delete"></mat-icon>
+          <mat-icon>delete</mat-icon>
         </button>
         {{ problem.name }}</mat-panel-title
       >
@@ -23,7 +22,7 @@
           mat-icon-button
           (click)="onDeleteSolutionClick($event, solution)"
         >
-          <mat-icon fontIcon="remove"></mat-icon>
+          <mat-icon>remove</mat-icon>
         </button>
         <span class="list-option-text">{{ solution.name }}</span>
       </mat-list-option>

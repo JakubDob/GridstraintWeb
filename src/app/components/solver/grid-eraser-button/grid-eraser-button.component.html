@@ -1,0 +1,7 @@
+<button mat-icon-button matTooltip="{{ tooltipMsg() }}" (click)="onClick()">
+  @if(eraserToggled()){
+  <mat-icon>{{ eraserOffIcon }}</mat-icon>
+  } @else {
+  <mat-icon>{{ eraserOnIcon }}</mat-icon>
+  }
+</button>

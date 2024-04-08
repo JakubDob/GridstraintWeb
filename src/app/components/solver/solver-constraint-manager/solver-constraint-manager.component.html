@@ -1,50 +1,13 @@
-<div>Active constraint: {{ activeConstraint()?.name }}</div>
-<div>Active view: {{ activeView()?.name }}</div>
-<div>Active cell group: {{ activeGroup()?.name }}</div>
-<mat-form-field>
-  <mat-label>Choose constraint</mat-label>
-  <mat-select
-    hideSingleSelectionIndicator
-    [(value)]="selectedConstraint"
-    (selectionChange)="onConstraintSelectionChange()"
-  >
-    <mat-select-trigger
-      ><button
-        mat-icon-button
-        (click)="onAddViewToSelectedConstraintClick($event)"
-      >
-        <mat-icon fontIcon="add"></mat-icon>
-      </button>
-      {{ selectedConstraint?.name }}</mat-select-trigger
-    >
-    @for (constraint of constraints.values(); track constraint.name) {
-    <mat-option [value]="constraint" class="wide-text-mixin">
-      <span> {{ constraint.name }} </span>
-      <span>
-        @if (constraint.views.length > 0) {
-        <button
-          mat-icon-button
-          (click)="onClearConstraintClick($event, constraint)"
-        >
-          <mat-icon fontIcon="clear"></mat-icon>
-        </button>
-        }
-      </span>
-    </mat-option>
-    }
-  </mat-select>
-</mat-form-field>
-
 <mat-accordion>
-  @for(view of selectedConstraint?.views; track view) {
+  @for(view of activeConstraint()?.views; track view) {
   <mat-expansion-panel (opened)="onViewOpened(view)" (closed)="onViewClosed()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <button mat-icon-button (click)="onDeleteViewClick($event, view)">
-          <mat-icon fontIcon="delete"></mat-icon>
+          <mat-icon>delete</mat-icon>
         </button>
         <button mat-icon-button (click)="onAddGroupClick($event, view)">
-          <mat-icon fontIcon="add"></mat-icon>
+          <mat-icon>add</mat-icon>
         </button>
         <input
           [ngModel]="view.name"
@@ -63,7 +26,7 @@
         [value]="group"
         [selected]="selectedGroup.isSelected(group)"
         ><button mat-icon-button (click)="onDeleteGroupClick($event, group)">
-          <mat-icon fontIcon="remove"></mat-icon></button
+          <mat-icon>remove</mat-icon></button
         ><span class="list-option-text">
           <input
             [ngModel]="group.name"

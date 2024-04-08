@@ -9,7 +9,6 @@ import {
   CellGroupAndIndex,
   CellIndex,
   GridConstraint,
-  GridSize,
   GridView,
   IndexedValueChange,
   Solution,
@@ -26,8 +25,8 @@ import { ConstraintProviderService } from '../constraint/constraint-provider.ser
   providedIn: 'root',
 })
 export class SolverStateService {
-  private readonly _ereaserToggled = signal<boolean>(false);
-  private readonly _ereaserClearValues = signal<boolean>(false);
+  private readonly _eraserToggled = signal<boolean>(false);
+  private readonly _eraserClearValues = signal<boolean>(false);
   private readonly _constraints: Map<string, GridConstraint> = new Map();
   private readonly _values: Map<CellIndex, string> = new Map();
   private readonly _activeConstraint = signal<GridConstraint | null>(null);
@@ -35,10 +34,6 @@ export class SolverStateService {
   private readonly _activeCellGroup = signal<CellGroup | null>(null);
   private readonly _activeCellIndex = signal<CellIndex | null>(null);
   private readonly _activeSolution = signal<Solution | null>(null);
-  private readonly _gridSize = signal<GridSize>({
-    rows: this.defaults?.rows ?? 9,
-    cols: this.defaults?.cols ?? 9,
-  });
   private readonly _valueRange = signal<ValueRange>({ min: 0, max: 8 });
   private readonly _solvingMethod = signal<SolvingMethod>(
     SolvingMethod.SATISFY
@@ -62,14 +57,13 @@ export class SolverStateService {
     ValueChange<Solution>
   >();
 
-  readonly ereaserToggled = this._ereaserToggled.asReadonly();
-  readonly ereaserClearValues = this._ereaserClearValues.asReadonly();
+  readonly eraserToggled = this._eraserToggled.asReadonly();
+  readonly eraserClearValues = this._eraserClearValues.asReadonly();
   readonly activeView = this._activeView.asReadonly();
 
   readonly activeConstraint = this._activeConstraint.asReadonly();
   readonly activeCellGroup = this._activeCellGroup.asReadonly();
   readonly activeCellIndex = this._activeCellIndex.asReadonly();
-  readonly gridSize = this._gridSize.asReadonly();
   readonly valueRange = this._valueRange.asReadonly();
   readonly solvingMethod = this._solvingMethod.asReadonly();
   readonly findAllSolutions = this._findAllSolutions.asReadonly();
@@ -87,6 +81,14 @@ export class SolverStateService {
   readonly cellValueChanged$ = this.cellValueSubject.asObservable();
   readonly activeSolutionChanged$ =
     this.activeSolutionChangedSubject.asObservable();
+
+  readonly gridCellWidth = signal(this.defaults?.cellWidth ?? 20);
+  readonly gridCellHeight = signal(this.defaults?.cellHeight ?? 20);
+  readonly gridRows = signal(this.defaults?.rows ?? 9);
+  readonly gridCols = signal(this.defaults?.cols ?? 9);
+  readonly gridGapSize = signal(this.defaults?.gapSize ?? 1);
+  readonly gridGapColor = signal(this.defaults?.gapColor ?? 'black');
+  readonly gridCursor = signal('pointer');
 
   get constraints(): ReadonlyMap<string, GridConstraint> {
     return this._constraints;
@@ -145,12 +147,12 @@ export class SolverStateService {
     }
   }
 
-  toggleEreaser() {
-    this._ereaserToggled.update((value) => !value);
+  toggleEraser() {
+    this._eraserToggled.update((value) => !value);
   }
 
   setEreaseValues(value: boolean) {
-    this._ereaserClearValues.set(value);
+    this._eraserClearValues.set(value);
   }
 
   setProblemName(value: string) {
@@ -183,24 +185,6 @@ export class SolverStateService {
       return {
         ...currentRange,
         max: value,
-      };
-    });
-  }
-
-  setRowCount(rowCount: number) {
-    this._gridSize.update((currentSize) => {
-      return {
-        ...currentSize,
-        rows: rowCount,
-      };
-    });
-  }
-
-  setColCount(colCount: number) {
-    this._gridSize.update((currentSize) => {
-      return {
-        ...currentSize,
-        cols: colCount,
       };
     });
   }
@@ -393,7 +377,7 @@ export class SolverStateService {
   }
 
   getSolverCode(): string {
-    const gridLen = this._gridSize().cols * this._gridSize().rows - 1;
+    const gridLen = this.gridCols() * this.gridRows() - 1;
     const prelude = `include "globals.mzn";\narray [0..${gridLen}] of var ${
       this._valueRange().min
     }..${this._valueRange().max}: ${SolverConstraint.gridVarName};\n`;

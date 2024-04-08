@@ -1,0 +1,33 @@
+<mat-form-field>
+  <mat-label>Choose constraint</mat-label>
+  <mat-select
+    hideSingleSelectionIndicator
+    [(value)]="selectedConstraint"
+    (selectionChange)="onConstraintSelectionChange()"
+  >
+    <mat-select-trigger
+      ><button
+        mat-icon-button
+        (click)="onAddViewToSelectedConstraintClick($event)"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+      {{ selectedConstraint?.name }}</mat-select-trigger
+    >
+    @for (constraint of constraints.values(); track constraint.name) {
+    <mat-option [value]="constraint" class="wide-text-mixin">
+      <span> {{ constraint.name }} </span>
+      <span>
+        @if (constraint.views.length > 0) {
+        <button
+          mat-icon-button
+          (click)="onClearConstraintClick($event, constraint)"
+        >
+          <mat-icon>clear</mat-icon>
+        </button>
+        }
+      </span>
+    </mat-option>
+    }
+  </mat-select>
+</mat-form-field>

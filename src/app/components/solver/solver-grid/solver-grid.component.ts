@@ -2,9 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  Inject,
   inject,
-  Optional,
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,9 +10,7 @@ import { FormsModule } from '@angular/forms';
 import {
   CanvasGridCellRenderFn,
   CanvasGridCellRenderParams,
-  CanvasGridDefaultOptions,
   CanvasGridGapFn,
-  CANVAS_GRID_DEFAULT_OPTIONS,
   GridClickEvent,
   GridDragEvent,
   NgxCanvasGridComponent,
@@ -47,11 +43,7 @@ type TextStyle = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverGridComponent {
-  constructor(
-    @Optional()
-    @Inject(CANVAS_GRID_DEFAULT_OPTIONS)
-    private _defaults?: CanvasGridDefaultOptions
-  ) {
+  constructor() {
     this.solverState.activeViewChanged$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
@@ -120,13 +112,6 @@ export class SolverGridComponent {
 
   @ViewChild(NgxCanvasGridComponent) canvasGrid!: NgxCanvasGridComponent;
 
-  cellWidth: number = this._defaults?.cellWidth ?? 20;
-  cellHeight: number = this._defaults?.cellHeight ?? 20;
-  rows: number = this._defaults?.rows ?? 9;
-  cols: number = this._defaults?.cols ?? 9;
-  gapSize = this._defaults?.gapSize ?? 1;
-  gapColor = this._defaults?.gapColor ?? 'black';
-
   private defaultBackgroundColor = 'lightblue';
   private selectBorder: Border = {
     color: 'magenta',
@@ -139,13 +124,21 @@ export class SolverGridComponent {
   };
 
   private solverState = inject(SolverStateService);
-  private cellEreaserAction = computed(() => {
-    if (this.solverState.ereaserToggled()) {
+  cellWidth = this.solverState.gridCellWidth;
+  cellHeight = this.solverState.gridCellHeight;
+  rows = this.solverState.gridRows;
+  cols = this.solverState.gridCols;
+  gapSize = this.solverState.gridGapSize;
+  gapColor = this.solverState.gridGapColor;
+  gridCursor = this.solverState.gridCursor;
+
+  private cellEraserAction = computed(() => {
+    if (this.solverState.eraserToggled()) {
       return (cellIndex: number) => {
         this.solverState.removeCellIndexFromActiveView.bind(this.solverState)(
           cellIndex
         );
-        if (this.solverState.ereaserClearValues()) {
+        if (this.solverState.eraserClearValues()) {
           this.solverState.setValue(cellIndex, null);
         }
       };
@@ -223,14 +216,6 @@ export class SolverGridComponent {
     }
   };
 
-  onRowsChange() {
-    this.solverState.setRowCount(this.rows);
-  }
-
-  onColsChange() {
-    this.solverState.setColCount(this.cols);
-  }
-
   onClickCell(event: GridClickEvent) {
     if (event.buttonId === 0) {
       if (this.canvasGrid.draggingButtonId() === null) {
@@ -240,14 +225,14 @@ export class SolverGridComponent {
           this.solverState.setActiveCellIndex(event.cellIndex);
         }
       }
-      this.cellEreaserAction()?.(event.cellIndex);
+      this.cellEraserAction()?.(event.cellIndex);
     }
   }
 
   onDragCell(event: GridDragEvent) {
     if (event.buttonId === 0) {
       this.solverState.setActiveCellIndex(event.to);
-      this.cellEreaserAction()?.(event.to);
+      this.cellEraserAction()?.(event.to);
     }
   }
 

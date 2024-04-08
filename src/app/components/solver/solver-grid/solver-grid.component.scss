@@ -1,29 +1,13 @@
-.container {
-  // width: max(min(80vw, 80vh), 400px);
-  // height: max(min(80vw, 80vh), 400px);
-  width: fit-content;
-  border: 2px solid black;
-  padding: 0;
-  line-height: 0;
-}
-
-.sliders {
-  max-width: min-content;
-  flex-direction: column;
-  display: flex;
-  justify-content: left;
-}
-
-.slider {
-  display: flex;
-  flex-direction: column;
-}
-
 label {
   display: block;
 }
 
-ngx-canvas-grid {
+:host {
+  width: fit-content;
+  height: fit-content;
+  border: 2px solid black;
+  padding: 0;
+  line-height: 0;
   --canvas-background: gray;
   --canvas-cursor: pointer;
 }

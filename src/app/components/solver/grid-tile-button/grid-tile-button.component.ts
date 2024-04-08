@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PriorityQueue } from '../../../ds/ProrityQueue';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 
@@ -12,31 +11,28 @@ type GridSize = {
 };
 
 @Component({
-  selector: 'app-solver-grid-actions',
+  selector: 'app-grid-tile-button',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule, MatCheckboxModule, FormsModule],
-  templateUrl: './solver-grid-actions.component.html',
-  styleUrl: './solver-grid-actions.component.scss',
+  imports: [MatIconModule, MatButtonModule, MatTooltipModule],
+  templateUrl: './grid-tile-button.component.html',
+  styleUrl: './grid-tile-button.component.scss',
 })
-export class SolverGridActionsComponent {
-  solverState = inject(SolverStateService);
-  ereaseValues = false;
+export class GridTileButtonComponent {
+  private solverState = inject(SolverStateService);
 
-  onClickEreaser() {
-    this.solverState.toggleEreaser();
-  }
+  tooltipMsg = 'Tile the grid with the currently selected group pattern';
+  @Input() icon = 'grid_view';
 
-  onChangedEreaseValues(value: boolean) {
-    this.solverState.setEreaseValues(value);
-  }
-
-  onClickTile() {
+  onClick() {
     const activeGroup = this.solverState.activeCellGroup();
     if (!activeGroup) {
       return;
     }
     const initialTile = new Set(activeGroup.indices);
-    const gridSize = this.solverState.gridSize();
+    const gridSize: GridSize = {
+      cols: this.solverState.gridCols(),
+      rows: this.solverState.gridRows(),
+    };
     const taken = new Set<number>();
     const xyLookup: number[][] = [
       ...Array(gridSize.cols * gridSize.rows).keys(),

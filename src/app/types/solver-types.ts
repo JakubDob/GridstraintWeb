@@ -72,11 +72,6 @@ export type CellGroupAndIndex = {
 
 export type CellIndex = number;
 
-export type GridSize = {
-  rows: number;
-  cols: number;
-};
-
 export type ValueRange = {
   min: number;
   max: number;

@@ -1,0 +1,9 @@
+<button mat-icon-button matTooltip="{{ tooltipMsg() }}" (click)="onClick()">
+  <mat-icon>
+    @if(isRunning()){
+    {{ stopIcon }}
+    } @else {
+    {{ runIcon }}
+    }
+  </mat-icon>
+</button>

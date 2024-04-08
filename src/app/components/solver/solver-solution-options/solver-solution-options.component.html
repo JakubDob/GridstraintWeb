@@ -1,5 +1,4 @@
 <mat-card>
-  <mat-card-header> <h2>Solution Options</h2> </mat-card-header>
   <mat-card-content>
     <mat-form-field>
       <mat-select
@@ -41,21 +40,5 @@
       (ngModelChange)="onChangedAllSolutions($event)"
       >Find all solutions</mat-checkbox
     >
-    <button
-      mat-flat-button
-      color="primary"
-      [disabled]="isRunning()"
-      (click)="onClickSolve()"
-    >
-      Solve
-    </button>
-    <button
-      mat-flat-button
-      color="warn"
-      [disabled]="!isRunning()"
-      (click)="onClickCancel()"
-    >
-      Cancel
-    </button>
   </mat-card-content>
 </mat-card>

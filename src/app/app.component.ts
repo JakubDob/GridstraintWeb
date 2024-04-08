@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -6,8 +7,11 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'GridstraintWeb';
+  constructor(private matIconReg: MatIconRegistry) {
+    this.matIconReg.setDefaultFontSetClass('material-symbols-outlined');
+  }
 }

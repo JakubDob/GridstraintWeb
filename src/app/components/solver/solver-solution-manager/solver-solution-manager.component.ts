@@ -22,8 +22,6 @@ export class SolverSolutionManagerComponent {
   selectedProblem?: SolvedProblemInstance;
   selectedSolution = new SelectionModel<Solution>();
 
-  activeSolution = this.solverState.activeSolution;
-
   constructor() {
     this.solverState.activeSolutionChanged$
       .pipe(takeUntilDestroyed())
