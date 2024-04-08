@@ -104,3 +104,9 @@ export type MiniZincCmdParams = {
   'time-limit'?: number;
   'all-solutions'?: boolean;
 };
+
+export type SupportedSolver = {
+  internalName: string;
+  version: string;
+  displayName: string;
+};

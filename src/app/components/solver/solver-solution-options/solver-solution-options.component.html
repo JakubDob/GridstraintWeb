@@ -1,6 +1,25 @@
 <mat-card>
   <mat-card-content>
     <mat-form-field>
+      <mat-label>Solver</mat-label>
+      <mat-select
+        [(value)]="selectedSolver"
+        (valueChange)="onChangedSolver($event)"
+      >
+        <mat-select-trigger>
+          @if(selectedSolver){
+          {{ selectedSolver.displayName }}
+          }
+        </mat-select-trigger>
+        @for(supported of supportedSolvers$ | async; track supported) {
+        <mat-option [value]="supported">
+          {{ supported.displayName }}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Solving method</mat-label>
       <mat-select
         [(value)]="selectedSolvingMethod"
         (valueChange)="onChangedSolvingMethod($event)"

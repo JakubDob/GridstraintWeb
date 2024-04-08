@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import * as MiniZinc from 'minizinc';
-import { MiniZincCmdParams } from '../../types/solver-types';
+import { Subject } from 'rxjs';
+import { MiniZincCmdParams, SupportedSolver } from '../../types/solver-types';
 
 type SingleSolutionCb = (solutionMsg: MiniZinc.SolutionMessage) => void;
 type SolveResultCb = (solveResult: MiniZinc.SolveResult) => void;
@@ -13,8 +14,34 @@ export class MiniZincService {
   private currentModel?: MiniZinc.Model;
   private currentSolveProgress?: MiniZinc.SolveProgress;
   private _isRunning = signal<boolean>(false);
-  private defaultSolver = 'Gecode';
+  private _defaultSolver: SupportedSolver | null = null;
+  private supportedSolversSubject = new Subject<SupportedSolver[]>();
+  private defaultSolverSubject = new Subject<SupportedSolver>();
+
   readonly isRunning = this._isRunning.asReadonly();
+  readonly supportedSolvers$ = this.supportedSolversSubject.asObservable();
+  readonly defaultSolver$ = this.defaultSolverSubject.asObservable();
+
+  constructor() {
+    MiniZinc.solvers().then((data: any[]) => {
+      const init: SupportedSolver[] = [];
+      data.forEach((solver) => {
+        init.push({
+          internalName: solver.name,
+          version: solver.version,
+          displayName: `${solver.name} ${solver.version}`,
+        });
+      });
+      this.supportedSolversSubject.next(init);
+      const defSolver = init.find(
+        (solver) => solver.internalName.toLowerCase() === 'gecode'
+      );
+      if (defSolver) {
+        this._defaultSolver = defSolver;
+        this.defaultSolverSubject.next(defSolver);
+      }
+    });
+  }
 
   solve(
     modelContent: string,
@@ -56,7 +83,9 @@ export class MiniZincService {
 
   private parseParams(params?: MiniZincCmdParams): MiniZinc.ParamConfig {
     let newParams: MiniZinc.ParamConfig = {};
-    newParams.solver = params?.solver ? params?.solver : this.defaultSolver;
+    newParams.solver = params?.solver
+      ? params?.solver
+      : this._defaultSolver?.internalName;
     if (params === undefined) {
       return newParams;
     }

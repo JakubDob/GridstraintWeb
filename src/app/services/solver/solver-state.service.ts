@@ -15,6 +15,7 @@ import {
   SolvedProblemInstance,
   SolverConstraint,
   SolvingMethod,
+  SupportedSolver,
   ValueChange,
   ValueRange,
 } from '../../types/solver-types';
@@ -89,6 +90,7 @@ export class SolverStateService {
   readonly gridGapSize = signal(this.defaults?.gapSize ?? 1);
   readonly gridGapColor = signal(this.defaults?.gapColor ?? 'black');
   readonly gridCursor = signal('pointer');
+  readonly currentSolver = signal<SupportedSolver | null>(null);
 
   get constraints(): ReadonlyMap<string, GridConstraint> {
     return this._constraints;

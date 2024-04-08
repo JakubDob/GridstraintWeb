@@ -88,6 +88,7 @@ export class SolverRunButtonComponent {
       },
       (exit) => {},
       {
+        solver: this.solverState.currentSolver()?.internalName,
         'all-solutions': this.allSolutions(),
         'time-limit': this.timeout() * 1000,
       }
