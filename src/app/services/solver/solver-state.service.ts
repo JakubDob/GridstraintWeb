@@ -382,7 +382,6 @@ export class SolverStateService {
       this._valueRange().min
     }..${this._valueRange().max}: ${SolverConstraint.gridVarName};\n`;
     const codes: string[] = [];
-    codes.push(SolverConstraint.valueConstraint(this._values));
     const solverConstraints = this.constraintProvider.getAll();
     for (let [name, solverConstraint] of solverConstraints) {
       const gridConstraint = this._constraints.get(name);
@@ -399,12 +398,14 @@ export class SolverStateService {
         });
       }
     }
+    codes.push(SolverConstraint.valueConstraint(this._values));
     let method = 'solve ' + this.solvingMethod();
     if (this.solvingMethod() !== SolvingMethod.SATISFY) {
       method += ` sum(${SolverConstraint.gridVarName})`;
     }
     method += ';\n';
-    return prelude + codes.join('\n') + '\n' + method;
+    const result = prelude + codes.join('\n') + '\n' + method;
+    return result;
   }
 
   clearConstraintViews(constraint: GridConstraint) {
