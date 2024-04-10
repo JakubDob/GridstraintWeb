@@ -1,15 +1,10 @@
-mat-card-header {
-  display: flex;
-  justify-content: center;
-}
-
-mat-card-content {
-  display: flex;
-  flex-direction: column;
-}
-
 .sliders {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
 }

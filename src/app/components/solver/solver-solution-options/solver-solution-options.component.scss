@@ -1,9 +1,4 @@
-mat-card-header {
-  display: flex;
-  justify-content: center;
-}
-
-mat-card-content {
+:host {
   display: flex;
   flex-direction: column;
 }

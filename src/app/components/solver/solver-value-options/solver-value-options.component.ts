@@ -1,7 +1,8 @@
 import { Component, computed, inject, NgZone } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatInputModule } from '@angular/material/input';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 import { IndexedValueChange, ValueChange } from '../../../types/solver-types';
@@ -9,7 +10,7 @@ import { IndexedValueChange, ValueChange } from '../../../types/solver-types';
 @Component({
   selector: 'app-solver-value-options',
   standalone: true,
-  imports: [MatCardModule, MatInputModule, FormsModule],
+  imports: [MatInputModule, FormsModule, MatDividerModule, MatCheckboxModule],
   templateUrl: './solver-value-options.component.html',
   styleUrl: './solver-value-options.component.scss',
 })
@@ -20,6 +21,7 @@ export class SolverValueOptionsComponent {
   maxValue: number = this.solverState.valueRange().max;
   selectedCellValue?: number;
   disableInput: boolean = true;
+  ereaseValues = false;
 
   private solutionViewEnabled = computed(
     () => this.solverState.activeSolution() !== null
@@ -79,5 +81,9 @@ export class SolverValueOptionsComponent {
         value === null ? null : value.toString()
       );
     }
+  }
+
+  onChangedEreaseValues(value: boolean) {
+    this.solverState.setEreaseValues(value);
   }
 }

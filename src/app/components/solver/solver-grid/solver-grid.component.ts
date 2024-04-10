@@ -22,6 +22,7 @@ import {
   IndexedValueChange,
   ValueChange,
 } from '../../../types/solver-types';
+import { getDistinctColor } from '../../../utils/GridUtils';
 
 type Border = {
   style: string;
@@ -155,51 +156,38 @@ export class SolverGridComponent {
     () => this.solverState.activeSolution() !== null
   );
 
-  gapFn: CanvasGridGapFn = (gapNumber: number) => {
-    return gapNumber % 3 === 0;
-  };
+  private renderBorder(p: CanvasGridCellRenderParams) {
+    p.context.strokeStyle = this.selectBorder.color;
+    p.context.lineWidth = this.selectBorder.width;
+    p.context.strokeRect(
+      p.cellRect.x + this.selectBorder.width / 2,
+      p.cellRect.y + this.selectBorder.width / 2,
+      p.cellRect.w - this.selectBorder.width,
+      p.cellRect.h - this.selectBorder.width
+    );
+  }
 
-  cellRenderFn: CanvasGridCellRenderFn = (p: CanvasGridCellRenderParams) => {
+  private renderBackground(p: CanvasGridCellRenderParams) {
     const group = this.solverState
       .activeView()
       ?.indexToCellGroup.get(p.cellIndex);
     if (group) {
       if (group === this.solverState.activeCellGroup()) {
-        const centerX = p.cellRect.x + p.cellRect.w / 2;
-        const centerY = p.cellRect.y + p.cellRect.h / 2;
-        const radius = Math.min(p.cellRect.w, p.cellRect.h);
-        const gradient = p.context.createRadialGradient(
-          centerX,
-          centerY,
-          radius / 25,
-          centerX,
-          centerY,
-          radius
+        const len = this.cols() * this.rows();
+        p.context.fillStyle = getDistinctColor(
+          360,
+          (p.elapsedTime * 50 + p.cellRect.x + p.cellRect.y) % 360
         );
-        const offset = (Math.sin(p.elapsedTime * 2) + 1) / 4;
-        gradient.addColorStop(offset, group.backgroundColor);
-        gradient.addColorStop(1, 'white');
-        p.context.fillStyle = gradient;
       } else {
         p.context.fillStyle = group.backgroundColor;
       }
     } else {
       p.context.fillStyle = this.defaultBackgroundColor;
     }
-
     p.context.fillRect(p.cellRect.x, p.cellRect.y, p.cellRect.w, p.cellRect.h);
+  }
 
-    if (p.cellIndex === this.solverState.activeCellIndex()) {
-      p.context.strokeStyle = this.selectBorder.color;
-      p.context.lineWidth = this.selectBorder.width;
-      p.context.strokeRect(
-        p.cellRect.x + this.selectBorder.width / 2,
-        p.cellRect.y + this.selectBorder.width / 2,
-        p.cellRect.w - this.selectBorder.width,
-        p.cellRect.h - this.selectBorder.width
-      );
-    }
-
+  private renderText(p: CanvasGridCellRenderParams) {
     let value = this.solverState.activeSolution()
       ? this.solverState.activeSolution()?.values.at(p.cellIndex)
       : this.solverState.values.get(p.cellIndex);
@@ -214,6 +202,18 @@ export class SolverGridComponent {
         text: value,
       });
     }
+  }
+
+  gapFn: CanvasGridGapFn = (gapNumber: number) => {
+    return gapNumber % 3 === 0;
+  };
+
+  cellRenderFn: CanvasGridCellRenderFn = (p: CanvasGridCellRenderParams) => {
+    this.renderBackground(p);
+    if (p.cellIndex === this.solverState.activeCellIndex()) {
+      this.renderBorder(p);
+    }
+    this.renderText(p);
   };
 
   onClickCell(event: GridClickEvent) {

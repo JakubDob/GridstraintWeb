@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -19,7 +18,6 @@ import { SolvingMethod, SupportedSolver } from '../../../types/solver-types';
     CommonModule,
     MatSelectModule,
     FormsModule,
-    MatCardModule,
     MatButtonModule,
     MatCheckboxModule,
     MatSliderModule,

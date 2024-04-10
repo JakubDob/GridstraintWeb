@@ -1,63 +1,59 @@
-<mat-card>
-  <mat-card-content>
-    <mat-form-field>
-      <mat-label>Solver</mat-label>
-      <mat-select
-        [(value)]="selectedSolver"
-        (valueChange)="onChangedSolver($event)"
-      >
-        <mat-select-trigger>
-          @if(selectedSolver){
-          {{ selectedSolver.displayName }}
-          }
-        </mat-select-trigger>
-        @for(supported of supportedSolvers$ | async; track supported) {
-        <mat-option [value]="supported">
-          {{ supported.displayName }}
-        </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Solving method</mat-label>
-      <mat-select
-        [(value)]="selectedSolvingMethod"
-        (valueChange)="onChangedSolvingMethod($event)"
-      >
-        @for(method of solvingMethodsIter | keyvalue; track method.key) {
-        <mat-option [value]="method.value">
-          {{ method.value }}
-        </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Problem name</mat-label>
-      <input
-        matInput
-        placeholder="ex. Sudoku"
-        [(ngModel)]="problemName"
-        (ngModelChange)="onChangedProblemName($event)"
-      />
-    </mat-form-field>
-    <mat-label for="timeout_slider">Timeout {{ timeout }}s</mat-label>
-    <mat-slider
-      id="timeout_slider"
-      min="5"
-      max="300"
-      step="5"
-      showTickMarks
-      discrete
-      [displayWith]="formatTimeoutLabel"
-      ><input
-        matSliderThumb
-        [(ngModel)]="timeout"
-        (ngModelChange)="onChangedTimeout($event)"
-    /></mat-slider>
-    <mat-checkbox
-      [(ngModel)]="allSolutions"
-      (ngModelChange)="onChangedAllSolutions($event)"
-      >Find all solutions</mat-checkbox
-    >
-  </mat-card-content>
-</mat-card>
+<mat-form-field>
+  <mat-label>Solver</mat-label>
+  <mat-select
+    [(value)]="selectedSolver"
+    (valueChange)="onChangedSolver($event)"
+  >
+    <mat-select-trigger>
+      @if(selectedSolver){
+      {{ selectedSolver.displayName }}
+      }
+    </mat-select-trigger>
+    @for(supported of supportedSolvers$ | async; track supported) {
+    <mat-option [value]="supported">
+      {{ supported.displayName }}
+    </mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<mat-form-field>
+  <mat-label>Solving method</mat-label>
+  <mat-select
+    [(value)]="selectedSolvingMethod"
+    (valueChange)="onChangedSolvingMethod($event)"
+  >
+    @for(method of solvingMethodsIter | keyvalue; track method.key) {
+    <mat-option [value]="method.value">
+      {{ method.value }}
+    </mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<mat-form-field>
+  <mat-label>Problem name</mat-label>
+  <input
+    matInput
+    placeholder="ex. Sudoku"
+    [(ngModel)]="problemName"
+    (ngModelChange)="onChangedProblemName($event)"
+  />
+</mat-form-field>
+<mat-label for="timeout_slider">Timeout {{ timeout }}s</mat-label>
+<mat-slider
+  id="timeout_slider"
+  min="5"
+  max="300"
+  step="5"
+  showTickMarks
+  discrete
+  [displayWith]="formatTimeoutLabel"
+  ><input
+    matSliderThumb
+    [(ngModel)]="timeout"
+    (ngModelChange)="onChangedTimeout($event)"
+/></mat-slider>
+<mat-checkbox
+  [(ngModel)]="allSolutions"
+  (ngModelChange)="onChangedAllSolutions($event)"
+  >Find all solutions</mat-checkbox
+>

@@ -1,32 +1,33 @@
-<mat-card>
-  <mat-card-content>
-    <mat-form-field>
-      <mat-label>Min</mat-label>
-      <input
-        matInput
-        type="number"
-        [(ngModel)]="minValue"
-        (ngModelChange)="onMinValueChange($event)"
-      />
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Max</mat-label>
-      <input
-        matInput
-        type="number"
-        [(ngModel)]="maxValue"
-        (ngModelChange)="onMaxValueChange($event)"
-      />
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Selected cell</mat-label>
-      <input
-        [disabled]="disableInput"
-        matInput
-        type="number"
-        [(ngModel)]="selectedCellValue"
-        (ngModelChange)="onSelectedCellValueChange($event)"
-      />
-    </mat-form-field>
-  </mat-card-content>
-</mat-card>
+<mat-checkbox
+  [(ngModel)]="ereaseValues"
+  (ngModelChange)="onChangedEreaseValues($event)"
+  >Clear values with eraser</mat-checkbox
+>
+<mat-form-field>
+  <mat-label>Min</mat-label>
+  <input
+    matInput
+    type="number"
+    [(ngModel)]="minValue"
+    (ngModelChange)="onMinValueChange($event)"
+  />
+</mat-form-field>
+<mat-form-field>
+  <mat-label>Max</mat-label>
+  <input
+    matInput
+    type="number"
+    [(ngModel)]="maxValue"
+    (ngModelChange)="onMaxValueChange($event)"
+  />
+</mat-form-field>
+<mat-form-field>
+  <mat-label>Selected cell</mat-label>
+  <input
+    [disabled]="disableInput"
+    matInput
+    type="number"
+    [(ngModel)]="selectedCellValue"
+    (ngModelChange)="onSelectedCellValueChange($event)"
+  />
+</mat-form-field>
