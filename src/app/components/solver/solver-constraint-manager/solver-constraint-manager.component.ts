@@ -30,15 +30,15 @@ import { CellGroup, GridView } from '../../../types/solver-types';
 })
 export class SolverConstraintManagerComponent {
   private solverState: SolverStateService = inject(SolverStateService);
-  activeConstraint = this.solverState.activeConstraint;
+  activeConstraint = this.solverState.activeConstraint.value;
 
   selectedGroup = new SelectionModel<CellGroup>();
 
   constructor() {
-    this.solverState.activeCellGroupChanged$
+    this.solverState.activeCellGroup.changes$
       .pipe(takeUntilDestroyed())
-      .subscribe((change) => {
-        if (change.current === null) {
+      .subscribe(([_, current]) => {
+        if (current === null) {
           this.selectedGroup.clear();
         }
       });
@@ -47,7 +47,7 @@ export class SolverConstraintManagerComponent {
   onGroupSelection(event: MatSelectionListChange) {
     this.selectedGroup.clear();
     this.selectedGroup.select(event.options[0].value);
-    this.solverState.setActiveGroup(event.options[0].value);
+    this.solverState.activeCellGroup.set(event.options[0].value);
   }
 
   onDeleteViewClick(event: Event, view: GridView) {
@@ -66,11 +66,11 @@ export class SolverConstraintManagerComponent {
   }
 
   onViewOpened(view: GridView) {
-    this.solverState.setActiveView(view);
+    this.solverState.activeView.set(view);
   }
 
   onViewClosed() {
-    this.solverState.setActiveGroup(null);
+    this.solverState.activeCellGroup.set(null);
   }
 
   onViewNameChange(newName: string, view: GridView) {

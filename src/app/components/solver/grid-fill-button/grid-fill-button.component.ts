@@ -17,10 +17,10 @@ export class GridFillButtonComponent {
   @Input() icon = 'format_color_fill';
 
   onClick() {
-    if (!this.solverState.activeCellGroup()) {
+    if (!this.solverState.activeCellGroup.value()) {
       return;
     }
-    const view = this.solverState.activeView();
+    const view = this.solverState.activeView.value();
     if (!view) return;
     const len = this.solverState.gridCols() * this.solverState.gridRows();
     for (let i = 0; i < len; ++i) {

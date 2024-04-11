@@ -53,19 +53,19 @@ export class SolverSolutionOptionsComponent {
   }
 
   onChangedSolvingMethod(value: SolvingMethod) {
-    this.solverState.setSolvingMethod(value);
+    this.solverState.solvingMethod.set(value);
   }
 
   onChangedAllSolutions(value: boolean) {
-    this.solverState.setFindAllSolutions(value);
+    this.solverState.findAllSolutions.set(value);
   }
 
   onChangedTimeout(value: number) {
-    this.solverState.setTimeout(value);
+    this.solverState.timeout.set(value);
   }
 
   onChangedProblemName(value: string) {
-    this.solverState.setProblemName(value);
+    this.solverState.problemName.set(value);
   }
 
   formatTimeoutLabel(value: number) {

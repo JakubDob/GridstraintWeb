@@ -5,7 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatInputModule } from '@angular/material/input';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
-import { IndexedValueChange, ValueChange } from '../../../types/solver-types';
+import { IndexedValueChange } from '../../../types/solver-types';
 
 @Component({
   selector: 'app-solver-value-options',
@@ -17,27 +17,27 @@ import { IndexedValueChange, ValueChange } from '../../../types/solver-types';
 export class SolverValueOptionsComponent {
   private solverState = inject(SolverStateService);
   private ngZone = inject(NgZone);
-  minValue: number = this.solverState.valueRange().min;
-  maxValue: number = this.solverState.valueRange().max;
+  minValue: number = this.solverState.minValue();
+  maxValue: number = this.solverState.maxValue();
   selectedCellValue?: number;
   disableInput: boolean = true;
   ereaseValues = false;
 
   private solutionViewEnabled = computed(
-    () => this.solverState.activeSolution() !== null
+    () => this.solverState.activeSolution.value() !== null
   );
 
   constructor() {
-    this.solverState.activeCellIndexChanged$
+    this.solverState.activeCellIndex.changes$
       .pipe(takeUntilDestroyed())
-      .subscribe((data: ValueChange<number>) => {
+      .subscribe(([_, current]) => {
         this.ngZone.run(() => {
           if (this.solutionViewEnabled()) {
             return;
           }
-          if (data.current !== null) {
+          if (current !== null) {
             this.disableInput = false;
-            const value = this.solverState.values.get(data.current);
+            const value = this.solverState.values.get(current);
             if (value) {
               this.selectedCellValue = parseInt(value);
             } else {
@@ -63,18 +63,18 @@ export class SolverValueOptionsComponent {
   }
 
   onMinValueChange(value: number) {
-    this.solverState.setValueRangeMin(value);
+    this.solverState.minValue.set(value);
   }
 
   onMaxValueChange(value: number) {
-    this.solverState.setValueRangeMax(value);
+    this.solverState.maxValue.set(value);
   }
 
   onSelectedCellValueChange(value: number | null) {
     if (this.solutionViewEnabled()) {
       return;
     }
-    const cellIndex = this.solverState.activeCellIndex();
+    const cellIndex = this.solverState.activeCellIndex.value();
     if (cellIndex !== null) {
       this.solverState.setValue(
         cellIndex,
@@ -84,6 +84,6 @@ export class SolverValueOptionsComponent {
   }
 
   onChangedEreaseValues(value: boolean) {
-    this.solverState.setEreaseValues(value);
+    this.solverState.eraserClearValues.set(value);
   }
 }

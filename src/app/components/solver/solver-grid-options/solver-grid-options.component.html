@@ -1,11 +1,19 @@
 <div class="sliders">
   Rows ({{ rows() }})
   <mat-slider min="1" max="50">
-    <input matSliderThumb [(ngModel)]="rows" />
+    <input
+      matSliderThumb
+      [ngModel]="rows()"
+      (ngModelChange)="onRowsChange($event)"
+    />
   </mat-slider>
   Cols ({{ cols() }})
   <mat-slider min="1" max="50">
-    <input matSliderThumb [(ngModel)]="cols" />
+    <input
+      matSliderThumb
+      [ngModel]="cols()"
+      (ngModelChange)="onColsChange($event)"
+    />
   </mat-slider>
   Cell width ({{ cellWidth() }})
   <mat-slider min="1" max="100">

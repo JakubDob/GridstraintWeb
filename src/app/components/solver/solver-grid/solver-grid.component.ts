@@ -17,10 +17,8 @@ import {
 } from '@jakubdob/ngx-canvas-grid';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 import {
-  CellGroup,
   CellGroupAndIndex,
   IndexedValueChange,
-  ValueChange,
 } from '../../../types/solver-types';
 import { getDistinctColor } from '../../../utils/GridUtils';
 
@@ -45,30 +43,30 @@ type TextStyle = {
 })
 export class SolverGridComponent {
   constructor() {
-    this.solverState.activeViewChanged$
+    this.solverState.activeView.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        this.solverState.setActiveCellIndex(null);
+        this.solverState.activeCellIndex.set(null);
         this.canvasGrid.redrawAll();
       });
 
-    this.solverState.activeCellGroupChanged$
+    this.solverState.activeCellGroup.changes$
       .pipe(takeUntilDestroyed())
-      .subscribe((change: ValueChange<CellGroup>) => {
-        change.previous?.indices.forEach((index) =>
+      .subscribe(([previous, current]) => {
+        previous?.indices.forEach((index) =>
           this.canvasGrid.deleteCellIndexFromMultiFrameRedraw(index)
         );
-        change.current?.indices.forEach((index) =>
+        current?.indices.forEach((index) =>
           this.canvasGrid.addCellIndexToMultiFrameRedraw(index)
         );
-        this.solverState.setActiveCellIndex(null);
+        this.solverState.activeCellIndex.set(null);
         this.canvasGrid.redrawAll();
       });
 
     this.solverState.cellAddedToGroup$
       .pipe(takeUntilDestroyed())
       .subscribe((data: CellGroupAndIndex) => {
-        if (data.group === this.solverState.activeCellGroup()) {
+        if (data.group === this.solverState.activeCellGroup.value()) {
           this.canvasGrid.addCellIndexToMultiFrameRedraw(data.index);
         } else {
           this.canvasGrid.addCellIndexToSingleFrameRedraw(data.index);
@@ -81,14 +79,14 @@ export class SolverGridComponent {
         this.canvasGrid.deleteCellIndexFromMultiFrameRedraw(data.index);
       });
 
-    this.solverState.activeCellIndexChanged$
+    this.solverState.activeCellIndex.changes$
       .pipe(takeUntilDestroyed())
-      .subscribe((change: ValueChange<number>) => {
-        if (change.current !== null) {
-          this.canvasGrid.addCellIndexToSingleFrameRedraw(change.current);
+      .subscribe(([previous, current]) => {
+        if (current !== null) {
+          this.canvasGrid.addCellIndexToSingleFrameRedraw(current);
         }
-        if (change.previous !== null) {
-          this.canvasGrid.addCellIndexToSingleFrameRedraw(change.previous);
+        if (previous !== null) {
+          this.canvasGrid.addCellIndexToSingleFrameRedraw(previous);
         }
       });
 
@@ -104,7 +102,7 @@ export class SolverGridComponent {
         this.canvasGrid.addCellIndexToSingleFrameRedraw(data.index);
       });
 
-    this.solverState.activeSolutionChanged$
+    this.solverState.activeSolution.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.canvasGrid.redrawAll();
@@ -144,7 +142,7 @@ export class SolverGridComponent {
         }
       };
     } else {
-      if (this.solverState.activeCellGroup()) {
+      if (this.solverState.activeCellGroup.value()) {
         return this.solverState.addCellIndexToActiveGroup.bind(
           this.solverState
         );
@@ -153,7 +151,7 @@ export class SolverGridComponent {
     return null;
   });
   private solutionViewEnabled = computed(
-    () => this.solverState.activeSolution() !== null
+    () => this.solverState.activeSolution.value() !== null
   );
 
   private renderBorder(p: CanvasGridCellRenderParams) {
@@ -168,12 +166,11 @@ export class SolverGridComponent {
   }
 
   private renderBackground(p: CanvasGridCellRenderParams) {
-    const group = this.solverState
-      .activeView()
+    const group = this.solverState.activeView
+      .value()
       ?.indexToCellGroup.get(p.cellIndex);
     if (group) {
-      if (group === this.solverState.activeCellGroup()) {
-        const len = this.cols() * this.rows();
+      if (group === this.solverState.activeCellGroup.value()) {
         p.context.fillStyle = getDistinctColor(
           360,
           (p.elapsedTime * 50 + p.cellRect.x + p.cellRect.y) % 360
@@ -188,8 +185,8 @@ export class SolverGridComponent {
   }
 
   private renderText(p: CanvasGridCellRenderParams) {
-    let value = this.solverState.activeSolution()
-      ? this.solverState.activeSolution()?.values.at(p.cellIndex)
+    let value = this.solverState.activeSolution.value()
+      ? this.solverState.activeSolution.value()?.values.at(p.cellIndex)
       : this.solverState.values.get(p.cellIndex);
 
     if (value) {
@@ -210,7 +207,7 @@ export class SolverGridComponent {
 
   cellRenderFn: CanvasGridCellRenderFn = (p: CanvasGridCellRenderParams) => {
     this.renderBackground(p);
-    if (p.cellIndex === this.solverState.activeCellIndex()) {
+    if (p.cellIndex === this.solverState.activeCellIndex.value()) {
       this.renderBorder(p);
     }
     this.renderText(p);
@@ -219,10 +216,10 @@ export class SolverGridComponent {
   onClickCell(event: GridClickEvent) {
     if (event.buttonId === 0) {
       if (this.canvasGrid.draggingButtonId() === null) {
-        if (this.solverState.activeCellIndex() === event.cellIndex) {
-          this.solverState.setActiveCellIndex(null);
+        if (this.solverState.activeCellIndex.value() === event.cellIndex) {
+          this.solverState.activeCellIndex.set(null);
         } else {
-          this.solverState.setActiveCellIndex(event.cellIndex);
+          this.solverState.activeCellIndex.set(event.cellIndex);
         }
       }
       this.cellEraserAction()?.(event.cellIndex);
@@ -231,7 +228,7 @@ export class SolverGridComponent {
 
   onDragCell(event: GridDragEvent) {
     if (event.buttonId === 0) {
-      this.solverState.setActiveCellIndex(event.to);
+      this.solverState.activeCellIndex.set(event.to);
       this.cellEraserAction()?.(event.to);
     }
   }
@@ -240,7 +237,7 @@ export class SolverGridComponent {
     if (this.solutionViewEnabled()) {
       return;
     }
-    const i = this.solverState.activeCellIndex();
+    const i = this.solverState.activeCellIndex.value();
     if (i !== null) {
       const oldValue = this.solverState.values.get(i);
       if (key >= '0' && key <= '9') {

@@ -23,22 +23,22 @@ export class SolverSolutionManagerComponent {
   selectedSolution = new SelectionModel<Solution>();
 
   constructor() {
-    this.solverState.activeSolutionChanged$
+    this.solverState.activeSolution.changes$
       .pipe(takeUntilDestroyed())
-      .subscribe((change) => {
-        if (change.current === null) {
+      .subscribe(([_, current]) => {
+        if (current === null) {
           this.selectedSolution.clear();
         }
       });
   }
 
   onProblemClosed() {
-    this.solverState.setActiveSolution(null);
+    this.solverState.activeSolution.set(null);
   }
 
   onSolutionSelection(event: MatSelectionListChange) {
     this.selectedSolution.select(event.options[0].value);
-    this.solverState.setActiveSolution(event.options[0].value);
+    this.solverState.activeSolution.set(event.options[0].value);
   }
 
   onDeleteProblemClick(event: Event, problem: SolvedProblemInstance) {

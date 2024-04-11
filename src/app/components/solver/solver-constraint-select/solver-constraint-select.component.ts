@@ -25,13 +25,13 @@ export class SolverConstraintSelectComponent {
 
   onConstraintSelectionChange() {
     if (this.selectedConstraint) {
-      this.solverState.setActiveConstraint(this.selectedConstraint.name);
+      this.solverState.activeConstraint.set(this.selectedConstraint.name);
     }
   }
 
   onAddViewToSelectedConstraintClick(event: Event) {
     event.stopPropagation();
-    const constraintName = this.solverState.activeConstraint()?.name;
+    const constraintName = this.solverState.activeConstraint.value()?.name;
     if (constraintName) {
       const details = this.constraintProvider.get(constraintName);
       if (details) {

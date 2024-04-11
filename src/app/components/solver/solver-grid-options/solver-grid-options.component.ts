@@ -19,4 +19,12 @@ export class SolverGridOptionsComponent {
   cols = this.solverState.gridCols;
   gapSize = this.solverState.gridGapSize;
   gapColor = this.solverState.gridGapColor;
+
+  onColsChange(value: number) {
+    this.solverState.gridCols.set(value);
+  }
+
+  onRowsChange(value: number) {
+    this.solverState.gridRows.set(value);
+  }
 }

@@ -24,7 +24,7 @@ export class GridTileButtonComponent {
   @Input() icon = 'grid_view';
 
   onClick() {
-    const activeGroup = this.solverState.activeCellGroup();
+    const activeGroup = this.solverState.activeCellGroup.value();
     if (!activeGroup) {
       return;
     }

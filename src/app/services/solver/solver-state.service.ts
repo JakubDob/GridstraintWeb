@@ -16,9 +16,8 @@ import {
   SolverConstraint,
   SolvingMethod,
   SupportedSolver,
-  ValueChange,
-  ValueRange,
 } from '../../types/solver-types';
+import { StateVarBuilder } from '../../types/state-builder';
 import { getRandomColor } from '../../utils/GridUtils';
 import { ConstraintProviderService } from '../constraint/constraint-provider.service';
 
@@ -27,62 +26,63 @@ import { ConstraintProviderService } from '../constraint/constraint-provider.ser
 })
 export class SolverStateService {
   private readonly _eraserToggled = signal<boolean>(false);
-  private readonly _eraserClearValues = signal<boolean>(false);
   private readonly _constraints: Map<string, GridConstraint> = new Map();
   private readonly _values: Map<CellIndex, string> = new Map();
-  private readonly _activeConstraint = signal<GridConstraint | null>(null);
-  private readonly _activeView = signal<GridView | null>(null);
-  private readonly _activeCellGroup = signal<CellGroup | null>(null);
-  private readonly _activeCellIndex = signal<CellIndex | null>(null);
-  private readonly _activeSolution = signal<Solution | null>(null);
-  private readonly _valueRange = signal<ValueRange>({ min: 0, max: 8 });
-  private readonly _solvingMethod = signal<SolvingMethod>(
-    SolvingMethod.SATISFY
-  );
-  private readonly _findAllSolutions = signal<boolean>(false);
-  private readonly _timeout = signal<number>(5);
-  private readonly _problemName = signal<string>('');
-  private readonly _solvedProblemInstances: SolvedProblemInstance[] = [];
 
-  private readonly activeCellGroupSubject = new Subject<
-    ValueChange<CellGroup>
-  >();
-  private readonly activeViewSubject = new Subject<ValueChange<GridView>>();
-  private readonly activeCellIndexSubject = new Subject<ValueChange<number>>();
+  private readonly _solvedProblemInstances: SolvedProblemInstance[] = [];
   private readonly cellGroupDeletedSubject = new Subject<CellGroup>();
   private readonly cellAddedToGroupSubject = new Subject<CellGroupAndIndex>();
   private readonly cellRemovedFromGroupSubject =
     new Subject<CellGroupAndIndex>();
   private readonly cellValueSubject = new Subject<IndexedValueChange<string>>();
-  private readonly activeSolutionChangedSubject = new Subject<
-    ValueChange<Solution>
-  >();
 
   readonly eraserToggled = this._eraserToggled.asReadonly();
-  readonly eraserClearValues = this._eraserClearValues.asReadonly();
-  readonly activeView = this._activeView.asReadonly();
 
-  readonly activeConstraint = this._activeConstraint.asReadonly();
-  readonly activeCellGroup = this._activeCellGroup.asReadonly();
-  readonly activeCellIndex = this._activeCellIndex.asReadonly();
-  readonly valueRange = this._valueRange.asReadonly();
-  readonly solvingMethod = this._solvingMethod.asReadonly();
-  readonly findAllSolutions = this._findAllSolutions.asReadonly();
-  readonly timeout = this._timeout.asReadonly();
-  readonly problemName = this._problemName.asReadonly();
-  readonly activeSolution = this._activeSolution.asReadonly();
-
-  readonly activeCellGroupChanged$ = this.activeCellGroupSubject.asObservable();
-  readonly activeViewChanged$ = this.activeViewSubject.asObservable();
-  readonly activeCellIndexChanged$ = this.activeCellIndexSubject.asObservable();
   readonly cellGroupDeleted$ = this.cellGroupDeletedSubject.asObservable();
   readonly cellAddedToGroup$ = this.cellAddedToGroupSubject.asObservable();
   readonly cellRemovedFromGroup$ =
     this.cellRemovedFromGroupSubject.asObservable();
   readonly cellValueChanged$ = this.cellValueSubject.asObservable();
-  readonly activeSolutionChanged$ =
-    this.activeSolutionChangedSubject.asObservable();
 
+  readonly activeConstraint = new StateVarBuilder<GridConstraint | null>(null)
+    .withSetterFn<string>((val, constraintName) => {
+      const constraint = this._constraints.get(constraintName);
+      if (constraint) {
+        this.activeView.set(null);
+        val.set(constraint);
+      }
+    })
+    .build();
+  readonly activeView = new StateVarBuilder<GridView | null>(null)
+    .withSideEffectFn((_, curr) => {
+      if (curr === null) {
+        this.activeCellGroup.set(null);
+      } else {
+        this.activeSolution.set(null);
+      }
+    })
+    .build();
+  readonly activeCellGroup = new StateVarBuilder<CellGroup | null>(null)
+    .withSideEffectFn((_, curr) => {
+      if (curr) {
+        this.activeView.set(curr.parent);
+      }
+    })
+    .build();
+  readonly activeSolution = new StateVarBuilder<Solution | null>(null)
+    .withSideEffectFn((_, curr) => {
+      if (curr) {
+        this.activeView.set(null);
+      }
+    })
+    .build();
+  readonly activeCellIndex = new StateVarBuilder<CellIndex | null>(
+    null
+  ).build();
+
+  readonly eraserClearValues = signal<boolean>(false);
+  readonly minValue = signal<number>(0);
+  readonly maxValue = signal<number>(8);
   readonly gridCellWidth = signal(this.defaults?.cellWidth ?? 20);
   readonly gridCellHeight = signal(this.defaults?.cellHeight ?? 20);
   readonly gridRows = signal(this.defaults?.rows ?? 9);
@@ -91,6 +91,10 @@ export class SolverStateService {
   readonly gridGapColor = signal(this.defaults?.gapColor ?? 'black');
   readonly gridCursor = signal('pointer');
   readonly currentSolver = signal<SupportedSolver | null>(null);
+  readonly findAllSolutions = signal<boolean>(false);
+  readonly timeout = signal<number>(5);
+  readonly problemName = signal<string>('');
+  readonly solvingMethod = signal<SolvingMethod>(SolvingMethod.SATISFY);
 
   get constraints(): ReadonlyMap<string, GridConstraint> {
     return this._constraints;
@@ -108,27 +112,11 @@ export class SolverStateService {
     const parentSolutions = solution.parent.solutions;
     const index = parentSolutions.indexOf(solution);
     if (index >= 0) {
-      if (solution === this._activeSolution()) {
-        this.setActiveSolution(null);
+      if (solution === this.activeSolution.value()) {
+        this.activeSolution.set(null);
       }
       parentSolutions.splice(index, 1);
     }
-  }
-
-  setActiveSolution(solution: Solution | null) {
-    this._activeSolution.update((prev) => {
-      if (solution !== prev) {
-        if (solution !== null) {
-          this.setActiveView(null);
-        }
-        this.activeSolutionChangedSubject.next({
-          current: solution,
-          previous: prev,
-        });
-        return solution;
-      }
-      return prev;
-    });
   }
 
   addSolvedProblemInstance(instance: SolvedProblemInstance) {
@@ -140,10 +128,10 @@ export class SolverStateService {
     if (index >= 0) {
       if (
         instance.solutions.find(
-          (solution) => solution === this._activeSolution()
+          (solution) => solution === this.activeSolution.value()
         )
       ) {
-        this.setActiveSolution(null);
+        this.activeSolution.set(null);
       }
       this._solvedProblemInstances.splice(index, 1);
     }
@@ -151,44 +139,6 @@ export class SolverStateService {
 
   toggleEraser() {
     this._eraserToggled.update((value) => !value);
-  }
-
-  setEreaseValues(value: boolean) {
-    this._eraserClearValues.set(value);
-  }
-
-  setProblemName(value: string) {
-    this._problemName.set(value);
-  }
-
-  setTimeout(value: number) {
-    this._timeout.set(value);
-  }
-
-  setFindAllSolutions(value: boolean) {
-    this._findAllSolutions.set(value);
-  }
-
-  setSolvingMethod(method: SolvingMethod) {
-    this._solvingMethod.set(method);
-  }
-
-  setValueRangeMin(value: number) {
-    this._valueRange.update((currentRange) => {
-      return {
-        ...currentRange,
-        min: value,
-      };
-    });
-  }
-
-  setValueRangeMax(value: number) {
-    this._valueRange.update((currentRange) => {
-      return {
-        ...currentRange,
-        max: value,
-      };
-    });
   }
 
   setValue(index: number, value: string | null) {
@@ -205,67 +155,9 @@ export class SolverStateService {
     });
   }
 
-  setActiveConstraint(name: string) {
-    this._activeConstraint.update((prev) => {
-      const constraint = this._constraints.get(name);
-      if (constraint && constraint !== prev) {
-        this.setActiveView(null);
-        return constraint;
-      }
-      return prev;
-    });
-  }
-
-  setActiveView(view: GridView | null) {
-    this._activeView.update((prev) => {
-      if (view !== prev) {
-        if (view === null) {
-          this.setActiveGroup(null);
-        } else {
-          this.setActiveSolution(null);
-        }
-        this.activeViewSubject.next({
-          current: view,
-          previous: prev,
-        });
-        return view;
-      }
-      return prev;
-    });
-  }
-
-  setActiveGroup(group: CellGroup | null) {
-    this._activeCellGroup.update((prev) => {
-      if (group !== prev) {
-        if (group !== null) {
-          this.setActiveView(group.parent);
-        }
-        this.activeCellGroupSubject.next({
-          current: group,
-          previous: prev,
-        });
-        return group;
-      }
-      return prev;
-    });
-  }
-
-  setActiveCellIndex(index: number | null) {
-    this._activeCellIndex.update((prev) => {
-      if (index !== prev) {
-        this.activeCellIndexSubject.next({
-          current: index,
-          previous: prev,
-        });
-        return index;
-      }
-      return prev;
-    });
-  }
-
   deleteGroup(group: CellGroup) {
-    if (this.activeCellGroup() === group) {
-      this.setActiveGroup(null);
+    if (this.activeCellGroup.value() === group) {
+      this.activeCellGroup.set(null);
     }
     const index = group.parent.groups.indexOf(group);
     if (index >= 0) {
@@ -278,9 +170,9 @@ export class SolverStateService {
   }
 
   deleteView(view: GridView) {
-    const av = this.activeView();
+    const av = this.activeView.value();
     if (av === view) {
-      this.setActiveView(null);
+      this.activeView.set(null);
     }
     const index = view.parent.views.indexOf(view);
     if (index >= 0) {
@@ -299,7 +191,7 @@ export class SolverStateService {
   }
 
   addNewGroupToActiveView(indices: Set<number>) {
-    const view = this._activeView();
+    const view = this.activeView.value();
     if (view) {
       const group: CellGroup = {
         backgroundColor: getRandomColor(),
@@ -313,7 +205,7 @@ export class SolverStateService {
   }
 
   addNewViewToActiveConstraint(settings?: ReadonlyMap<string, string>) {
-    const ac = this.activeConstraint();
+    const ac = this.activeConstraint.value();
     if (ac) {
       const nameLabel = settings?.get('label');
       ac.views.push({
@@ -338,14 +230,14 @@ export class SolverStateService {
   }
 
   addCellIndexToActiveGroup(index: number) {
-    const group = this._activeCellGroup();
+    const group = this.activeCellGroup.value();
     if (group) {
       this.addCellIndexToGroup(group, index);
     }
   }
 
   removeCellIndexFromActiveView(index: number) {
-    const group = this._activeView()?.indexToCellGroup.get(index);
+    const group = this.activeView.value()?.indexToCellGroup.get(index);
     if (group) {
       this.removeCellIndexFromGroup(group, index);
     }
@@ -366,7 +258,7 @@ export class SolverStateService {
   }
 
   deleteEmptyGroupsFromActiveView() {
-    const view = this._activeView();
+    const view = this.activeView.value();
     if (view) {
       this.deleteEmptyGroups(view);
     }
@@ -380,9 +272,9 @@ export class SolverStateService {
 
   getSolverCode(): string {
     const gridLen = this.gridCols() * this.gridRows() - 1;
-    const prelude = `include "globals.mzn";\narray [0..${gridLen}] of var ${
-      this._valueRange().min
-    }..${this._valueRange().max}: ${SolverConstraint.gridVarName};\n`;
+    const prelude = `include "globals.mzn";\narray [0..${gridLen}] of var ${this.minValue()}..${this.maxValue()}: ${
+      SolverConstraint.gridVarName
+    };\n`;
     const codes: string[] = [];
     const solverConstraints = this.constraintProvider.getAll();
     for (let [name, solverConstraint] of solverConstraints) {
@@ -412,9 +304,9 @@ export class SolverStateService {
 
   clearConstraintViews(constraint: GridConstraint) {
     const views = this._constraints.get(constraint.name)?.views;
-    if (views?.find((view) => view === this._activeView())) {
-      this.setActiveView(null);
-      this.setActiveGroup(null);
+    if (views?.find((view) => view === this.activeView.value())) {
+      this.activeView.set(null);
+      this.activeCellGroup.set(null);
     }
     views?.splice(0, views.length);
   }

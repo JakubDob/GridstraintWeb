@@ -72,16 +72,6 @@ export type CellGroupAndIndex = {
 
 export type CellIndex = number;
 
-export type ValueRange = {
-  min: number;
-  max: number;
-};
-
-export type ValueChange<T> = {
-  previous: T | null;
-  current: T | null;
-};
-
 export type IndexedValueChange<T> = {
   index: number;
   previous: T | null;
