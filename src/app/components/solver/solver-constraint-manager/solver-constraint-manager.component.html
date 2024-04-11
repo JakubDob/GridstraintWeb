@@ -2,6 +2,23 @@
   @for(view of activeConstraint()?.views; track view) {
   <mat-expansion-panel (opened)="onViewOpened(view)" (closed)="onViewClosed()">
     <mat-expansion-panel-header>
+      @if(view === editedView){
+      <div class="name-edit">
+        <span class="input-edit">
+          <input
+            [ngModel]="view.name"
+            (ngModelChange)="onViewNameChange($event, view)"
+            (keydown)="$event.stopPropagation()"
+            (click)="$event.stopPropagation()"
+          />
+        </span>
+        <span class="close-edit-button">
+          <button mat-icon-button (click)="onCloseEditViewClick($event)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </span>
+      </div>
+      } @else {
       <mat-panel-title>
         <button mat-icon-button (click)="onDeleteViewClick($event, view)">
           <mat-icon>delete</mat-icon>
@@ -9,32 +26,44 @@
         <button mat-icon-button (click)="onAddGroupClick($event, view)">
           <mat-icon>add</mat-icon>
         </button>
-        <input
-          [ngModel]="view.name"
-          (ngModelChange)="onViewNameChange($event, view)"
-          (keydown)="$event.stopPropagation()"
-          class="editable"
-        />
+        <button mat-icon-button (click)="onEditViewNameClick($event, view)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        {{ view.name }}
       </mat-panel-title>
+      }
     </mat-expansion-panel-header>
-    <mat-selection-list
-      [multiple]="false"
-      (selectionChange)="onGroupSelection($event)"
-    >
-      @for(group of view.groups; track group) {
-      <mat-list-option
-        [value]="group"
-        [selected]="selectedGroup.isSelected(group)"
-        ><button mat-icon-button (click)="onDeleteGroupClick($event, group)">
-          <mat-icon>remove</mat-icon></button
-        ><span class="list-option-text">
+    <mat-selection-list [multiple]="false">
+      @for(group of view.groups; track group) { @if(group === editedGroup) {
+      <div class="name-edit">
+        <span class="input-edit">
           <input
             [ngModel]="group.name"
             (ngModelChange)="onGroupNameChange($event, group)"
             (keydown)="$event.stopPropagation()"
-            class="editable" /></span
-      ></mat-list-option>
-      }
+          />
+        </span>
+        <span class="close-edit-button">
+          <button mat-icon-button (click)="onCloseEditGroupClick()">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </span>
+      </div>
+      } @else {
+      <mat-list-option
+        (click)="onGroupListClick(group)"
+        [value]="group"
+        [selected]="selectedGroup.isSelected(group)"
+      >
+        <button mat-icon-button (click)="onDeleteGroupClick($event, group)">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <button mat-icon-button (click)="onEditGroupNameClick($event, group)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <span class="list-option-text">{{ group.name }}</span>
+      </mat-list-option>
+      } }
     </mat-selection-list>
   </mat-expansion-panel>
   }

@@ -7,7 +7,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatListModule, MatSelectionListChange } from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 import { CellGroup, GridView } from '../../../types/solver-types';
@@ -33,6 +33,8 @@ export class SolverConstraintManagerComponent {
   activeConstraint = this.solverState.activeConstraint.value;
 
   selectedGroup = new SelectionModel<CellGroup>();
+  editedGroup: CellGroup | null = null;
+  editedView: GridView | null = null;
 
   constructor() {
     this.solverState.activeCellGroup.changes$
@@ -44,10 +46,34 @@ export class SolverConstraintManagerComponent {
       });
   }
 
-  onGroupSelection(event: MatSelectionListChange) {
+  onGroupListClick(group: CellGroup) {
+    const isSelected = this.selectedGroup.isSelected(group);
     this.selectedGroup.clear();
-    this.selectedGroup.select(event.options[0].value);
-    this.solverState.activeCellGroup.set(event.options[0].value);
+    if (isSelected) {
+      this.solverState.activeCellGroup.set(null);
+    } else {
+      this.selectedGroup.select(group);
+      this.solverState.activeCellGroup.set(group);
+    }
+  }
+
+  onEditGroupNameClick(event: MouseEvent, group: CellGroup) {
+    this.editedGroup = group;
+    event.stopPropagation();
+  }
+
+  onEditViewNameClick(event: MouseEvent, view: GridView) {
+    this.editedView = view;
+    event.stopPropagation();
+  }
+
+  onCloseEditGroupClick() {
+    this.editedGroup = null;
+  }
+
+  onCloseEditViewClick(event: MouseEvent) {
+    this.editedView = null;
+    event.stopPropagation();
   }
 
   onDeleteViewClick(event: Event, view: GridView) {
