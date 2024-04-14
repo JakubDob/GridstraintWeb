@@ -1,0 +1,21 @@
+<h2 mat-dialog-title class="title">
+  <span style="width: 24px"></span>
+  <span class="title-text">Generated code</span>
+  <span>
+    <button
+      mat-icon-button
+      matTooltip="{{ copyTooltipMsg }}"
+      [cdkCopyToClipboard]="code"
+    >
+      <mat-icon>content_copy</mat-icon>
+    </button>
+  </span>
+</h2>
+<mat-dialog-content>
+  <textarea readonly [cols]="textCols" [rows]="textRows">{{ code }}</textarea>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-flat-button color="primary" (click)="onCloseClick()">
+    Close
+  </button>
+</mat-dialog-actions>
