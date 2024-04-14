@@ -61,7 +61,8 @@ export class SolverRunButtonComponent {
     this.currentSolutions.push({
       name: `Solution ${this.currentSolutions.length + 1}`,
       parent: this.currentProblemInstance,
-      values: indices.map((i) => i.toString()),
+      stringValues: indices.map((i) => i.toString()),
+      numberValues: indices,
     });
   }
 

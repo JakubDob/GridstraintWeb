@@ -80,7 +80,8 @@ export type IndexedValueChange<T> = {
 
 export type Solution = {
   name: string;
-  values: string[];
+  stringValues: string[];
+  numberValues: number[];
   parent: SolvedProblemInstance;
 };
 

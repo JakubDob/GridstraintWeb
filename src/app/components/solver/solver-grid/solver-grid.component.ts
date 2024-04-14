@@ -105,7 +105,16 @@ export class SolverGridComponent {
     this.solverState.activeSolution.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
+        this.findMinMaxValuesInActiveSolution();
         this.canvasGrid.redrawAll();
+      });
+
+    this.solverState.colorSolutions.changes$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.solverState.activeSolution.value()) {
+          this.canvasGrid.redrawAll();
+        }
       });
   }
 
@@ -123,6 +132,8 @@ export class SolverGridComponent {
   };
 
   private solverState = inject(SolverStateService);
+  private activeSolutionMinValue = 0;
+  private activeSolutionMaxValue = 0;
   cellWidth = this.solverState.gridCellWidth;
   cellHeight = this.solverState.gridCellHeight;
   rows = this.solverState.gridRows;
@@ -169,6 +180,7 @@ export class SolverGridComponent {
     const group = this.solverState.activeView
       .value()
       ?.indexToCellGroup.get(p.cellIndex);
+    const solution = this.solverState.activeSolution.value();
     if (group) {
       if (group === this.solverState.activeCellGroup.value()) {
         p.context.fillStyle = getDistinctColor(
@@ -178,6 +190,13 @@ export class SolverGridComponent {
       } else {
         p.context.fillStyle = group.backgroundColor;
       }
+    } else if (solution && this.solverState.colorSolutions.value()) {
+      const diff =
+        this.activeSolutionMaxValue - this.activeSolutionMinValue + 1;
+      p.context.fillStyle = getDistinctColor(
+        diff,
+        solution.numberValues[p.cellIndex] % diff
+      );
     } else {
       p.context.fillStyle = this.defaultBackgroundColor;
     }
@@ -186,7 +205,7 @@ export class SolverGridComponent {
 
   private renderText(p: CanvasGridCellRenderParams) {
     let value = this.solverState.activeSolution.value()
-      ? this.solverState.activeSolution.value()?.values.at(p.cellIndex)
+      ? this.solverState.activeSolution.value()?.stringValues.at(p.cellIndex)
       : this.solverState.values.get(p.cellIndex);
 
     if (value) {
@@ -246,6 +265,21 @@ export class SolverGridComponent {
         const newValue = oldValue?.slice(0, -1);
         this.solverState.setValue(i, newValue ? newValue : null);
       }
+    }
+  }
+
+  private findMinMaxValuesInActiveSolution() {
+    const solution = this.solverState.activeSolution.value();
+    if (solution) {
+      this.activeSolutionMaxValue = -Number.MAX_VALUE;
+      this.activeSolutionMinValue = Number.MAX_VALUE;
+      solution.numberValues.forEach((value) => {
+        if (value > this.activeSolutionMaxValue) {
+          this.activeSolutionMaxValue = value;
+        } else if (value < this.activeSolutionMinValue) {
+          this.activeSolutionMinValue = value;
+        }
+      });
     }
   }
 }

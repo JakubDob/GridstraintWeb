@@ -80,6 +80,8 @@ export class SolverStateService {
     null
   ).build();
 
+  readonly colorSolutions = new StateVarBuilder<boolean>(false).build();
+
   readonly eraserClearValues = signal<boolean>(false);
   readonly minValue = signal<number>(0);
   readonly maxValue = signal<number>(8);

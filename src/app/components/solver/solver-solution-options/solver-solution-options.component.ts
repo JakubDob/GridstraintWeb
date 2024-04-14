@@ -34,6 +34,7 @@ export class SolverSolutionOptionsComponent {
   solvingMethodsIter = SolvingMethod;
   selectedSolvingMethod = this.solverState.solvingMethod();
   allSolutions = this.solverState.findAllSolutions();
+  colorSolutions = this.solverState.colorSolutions.value();
   timeout = this.solverState.timeout();
   problemName = this.solverState.problemName();
   selectedSolver?: SupportedSolver;
@@ -58,6 +59,10 @@ export class SolverSolutionOptionsComponent {
 
   onChangedAllSolutions(value: boolean) {
     this.solverState.findAllSolutions.set(value);
+  }
+
+  onChangedColorSolutions(value: boolean) {
+    this.solverState.colorSolutions.set(value);
   }
 
   onChangedTimeout(value: number) {
