@@ -1,0 +1,7 @@
+<button mat-icon-button matTooltip="{{ tooltipMsg() }}" (click)="onClick()">
+  @if(darkMode()){
+  <mat-icon>{{ lightIcon }}</mat-icon>
+  } @else {
+  <mat-icon>{{ darkIcon }}</mat-icon>
+  }
+</button>

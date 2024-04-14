@@ -7,6 +7,7 @@ import { GridEraserButtonComponent } from '../solver/grid-eraser-button/grid-era
 import { GridFillButtonComponent } from '../solver/grid-fill-button/grid-fill-button.component';
 import { GridTileButtonComponent } from '../solver/grid-tile-button/grid-tile-button.component';
 import { SolverRunButtonComponent } from '../solver/solver-run-button/solver-run-button.component';
+import { ThemeButtonComponent } from '../theme-button/theme-button.component';
 
 @Component({
   selector: 'app-toolbar',
@@ -20,6 +21,7 @@ import { SolverRunButtonComponent } from '../solver/solver-run-button/solver-run
     GridEraserButtonComponent,
     GridTileButtonComponent,
     GridFillButtonComponent,
+    ThemeButtonComponent,
   ],
   templateUrl: './toolbar.component.html',
   styleUrl: './toolbar.component.scss',

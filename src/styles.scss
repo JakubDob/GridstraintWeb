@@ -1,4 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+@use "@angular/material" as mat;
+@use "./assets/styles/mixin";
+@use "./assets/styles/theme.scss";
 
 html,
 body {
@@ -9,5 +12,10 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-@import "./_mixins.scss";
-@include mat-option-item-spaced;
+@include mixin.mat-option-item-spaced;
+
+@include mat.all-component-themes(theme.$light-theme);
+
+body.dark-theme {
+  @include mat.all-component-colors(theme.$dark-theme);
+}
