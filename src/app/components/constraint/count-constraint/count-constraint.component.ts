@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -20,6 +25,7 @@ import { RelationSymbol, SolverConstraint } from '../../../types/solver-types';
   ],
   templateUrl: './count-constraint.component.html',
   styleUrl: './count-constraint.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CountConstraintComponent extends SolverConstraint {
   private dialogRef = inject(

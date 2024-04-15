@@ -1,5 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, inject, Input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  Input,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -10,6 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './theme-button.component.html',
   styleUrl: './theme-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ThemeButtonComponent {
   private doc = inject(DOCUMENT);

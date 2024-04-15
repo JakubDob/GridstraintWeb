@@ -1,4 +1,9 @@
-import { Component, inject, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -16,6 +21,7 @@ type GridSize = {
   imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './grid-tile-button.component.html',
   styleUrl: './grid-tile-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridTileButtonComponent {
   private solverState = inject(SolverStateService);

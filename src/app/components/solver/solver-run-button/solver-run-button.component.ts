@@ -1,4 +1,10 @@
-import { Component, computed, inject, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  Input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,6 +24,7 @@ import {
   imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './solver-run-button.component.html',
   styleUrl: './solver-run-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverRunButtonComponent {
   private currentProblemInstance: SolvedProblemInstance | null = null;

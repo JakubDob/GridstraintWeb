@@ -1,4 +1,10 @@
-import { Component, computed, inject, NgZone } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  NgZone,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -13,6 +19,7 @@ import { IndexedValueChange } from '../../../types/solver-types';
   imports: [MatInputModule, FormsModule, MatDividerModule, MatCheckboxModule],
   templateUrl: './solver-value-options.component.html',
   styleUrl: './solver-value-options.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverValueOptionsComponent {
   private solverState = inject(SolverStateService);

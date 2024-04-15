@@ -1,5 +1,5 @@
 <mat-accordion>
-  @for(view of activeConstraint()?.views; track view) {
+  @for(view of activeConstraint()?.views(); track view) {
   <mat-expansion-panel (opened)="onViewOpened(view)" (closed)="onViewClosed()">
     <mat-expansion-panel-header>
       @if(view === editedView){
@@ -34,7 +34,7 @@
       }
     </mat-expansion-panel-header>
     <mat-selection-list [multiple]="false">
-      @for(group of view.groups; track group) { @if(group === editedGroup) {
+      @for(group of view.groups(); track group) { @if(group === editedGroup) {
       <div class="name-edit">
         <span class="input-edit">
           <input

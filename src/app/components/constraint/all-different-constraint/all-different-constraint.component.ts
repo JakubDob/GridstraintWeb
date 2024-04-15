@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SolverConstraint } from '../../../types/solver-types';
 
 @Component({
@@ -7,6 +7,7 @@ import { SolverConstraint } from '../../../types/solver-types';
   imports: [],
   templateUrl: './all-different-constraint.component.html',
   styleUrl: './all-different-constraint.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllDifferentConstraintComponent extends SolverConstraint {
   static toSolverCode(

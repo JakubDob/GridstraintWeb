@@ -1,5 +1,5 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialogActions,
@@ -25,6 +25,7 @@ import { SolverStateService } from '../../services/solver/solver-state.service';
   ],
   templateUrl: './code-display.component.html',
   styleUrl: './code-display.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodeDisplayComponent {
   private dialogRef = inject(MatDialogRef);

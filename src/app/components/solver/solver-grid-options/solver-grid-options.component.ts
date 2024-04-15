@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSliderModule } from '@angular/material/slider';
@@ -10,6 +10,7 @@ import { SolverStateService } from '../../../services/solver/solver-state.servic
   imports: [MatButtonModule, FormsModule, MatSliderModule],
   templateUrl: './solver-grid-options.component.html',
   styleUrl: './solver-grid-options.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverGridOptionsComponent {
   private solverState = inject(SolverStateService);

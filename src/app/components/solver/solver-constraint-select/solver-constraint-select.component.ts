@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +13,7 @@ import { GridConstraint } from '../../../types/solver-types';
   imports: [MatSelectModule, MatIconModule, MatButtonModule],
   templateUrl: './solver-constraint-select.component.html',
   styleUrl: './solver-constraint-select.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverConstraintSelectComponent {
   private solverState = inject(SolverStateService);

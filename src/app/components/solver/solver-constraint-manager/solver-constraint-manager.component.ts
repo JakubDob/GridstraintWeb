@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,6 +27,7 @@ import { CellGroup, GridView } from '../../../types/solver-types';
   ],
   templateUrl: './solver-constraint-manager.component.html',
   styleUrl: './solver-constraint-manager.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverConstraintManagerComponent {
   private solverState: SolverStateService = inject(SolverStateService);

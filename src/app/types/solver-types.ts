@@ -1,3 +1,5 @@
+import { WritableSignal } from '@angular/core';
+
 export class SolverConstraint {
   static readonly gridVarName = 'a';
   static wrapSetInBrackets(indices: ReadonlySet<number>) {
@@ -47,13 +49,13 @@ export enum SolvingMethod {
 
 export type GridConstraint = {
   readonly name: string;
-  readonly views: GridView[];
+  readonly views: WritableSignal<GridView[]>;
 };
 
 export type GridView = {
   readonly name: string;
   readonly parent: GridConstraint;
-  readonly groups: CellGroup[];
+  readonly groups: WritableSignal<CellGroup[]>;
   readonly indexToCellGroup: Map<number, CellGroup>;
   readonly settings?: ReadonlyMap<string, string>;
 };

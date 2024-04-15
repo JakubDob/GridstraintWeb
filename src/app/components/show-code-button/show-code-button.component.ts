@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,6 +11,7 @@ import { CodeDisplayComponent } from '../code-display/code-display.component';
   imports: [MatIconModule, MatButtonModule, MatTooltipModule, MatDialogModule],
   templateUrl: './show-code-button.component.html',
   styleUrl: './show-code-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShowCodeButtonComponent {
   dialog: MatDialog = inject(MatDialog);

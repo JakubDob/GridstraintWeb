@@ -1,4 +1,10 @@
-import { Component, computed, inject, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  Input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
@@ -10,6 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './grid-eraser-button.component.html',
   styleUrl: './grid-eraser-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridEraserButtonComponent {
   private state = inject(SolverStateService);

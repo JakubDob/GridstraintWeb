@@ -29,7 +29,9 @@ export class SolverStateService {
   private readonly _constraints: Map<string, GridConstraint> = new Map();
   private readonly _values: Map<CellIndex, string> = new Map();
 
-  private readonly _solvedProblemInstances: SolvedProblemInstance[] = [];
+  private readonly _solvedProblemInstances = signal<SolvedProblemInstance[]>(
+    []
+  );
   private readonly cellGroupDeletedSubject = new Subject<CellGroup>();
   private readonly cellAddedToGroupSubject = new Subject<CellGroupAndIndex>();
   private readonly cellRemovedFromGroupSubject =
@@ -98,16 +100,14 @@ export class SolverStateService {
   readonly problemName = signal<string>('');
   readonly solvingMethod = signal<SolvingMethod>(SolvingMethod.SATISFY);
 
+  readonly solvedProblemInstances = this._solvedProblemInstances.asReadonly();
+
   get constraints(): ReadonlyMap<string, GridConstraint> {
     return this._constraints;
   }
 
   get values(): ReadonlyMap<CellIndex, string> {
     return this._values;
-  }
-
-  getSolvedProblemInstances(): ReadonlyArray<SolvedProblemInstance> {
-    return this._solvedProblemInstances;
   }
 
   deleteSolution(solution: Solution) {
@@ -122,11 +122,11 @@ export class SolverStateService {
   }
 
   addSolvedProblemInstance(instance: SolvedProblemInstance) {
-    this._solvedProblemInstances.push(instance);
+    this._solvedProblemInstances.update((v) => [...v, instance]);
   }
 
   deleteSolvedProblemInstance(instance: SolvedProblemInstance) {
-    const index = this._solvedProblemInstances.indexOf(instance);
+    const index = this._solvedProblemInstances().indexOf(instance);
     if (index >= 0) {
       if (
         instance.solutions.find(
@@ -135,7 +135,7 @@ export class SolverStateService {
       ) {
         this.activeSolution.set(null);
       }
-      this._solvedProblemInstances.splice(index, 1);
+      this._solvedProblemInstances().splice(index, 1);
     }
   }
 
@@ -161,12 +161,12 @@ export class SolverStateService {
     if (this.activeCellGroup.value() === group) {
       this.activeCellGroup.set(null);
     }
-    const index = group.parent.groups.indexOf(group);
+    const index = group.parent.groups().indexOf(group);
     if (index >= 0) {
       group.indices.forEach((i) => {
         group.parent.indexToCellGroup.delete(i);
       });
-      group.parent.groups.splice(index, 1);
+      group.parent.groups().splice(index, 1);
       this.cellGroupDeletedSubject.next(group);
     }
   }
@@ -176,18 +176,18 @@ export class SolverStateService {
     if (av === view) {
       this.activeView.set(null);
     }
-    const index = view.parent.views.indexOf(view);
+    const index = view.parent.views().indexOf(view);
     if (index >= 0) {
-      view.groups.forEach((group) => this.deleteGroup(group));
-      view.parent.views.splice(index, 1);
+      view.groups().forEach((group) => this.deleteGroup(group));
+      view.parent.views().splice(index, 1);
     }
   }
 
   addNewGroup(view: GridView) {
-    view.groups.push({
+    view.groups().push({
       backgroundColor: getRandomColor(),
       indices: new Set(),
-      name: `${view.name}_group${view.groups.length}`,
+      name: `${view.name}_group${view.groups().length}`,
       parent: view,
     });
   }
@@ -198,10 +198,10 @@ export class SolverStateService {
       const group: CellGroup = {
         backgroundColor: getRandomColor(),
         indices: new Set(),
-        name: `${view.name}_group${view.groups.length}`,
+        name: `${view.name}_group${view.groups().length}`,
         parent: view,
       };
-      view.groups.push(group);
+      view.groups().push(group);
       indices.forEach((i) => this.addCellIndexToGroup(group, i));
     }
   }
@@ -210,13 +210,16 @@ export class SolverStateService {
     const ac = this.activeConstraint.value();
     if (ac) {
       const nameLabel = settings?.get('label');
-      ac.views.push({
-        groups: [],
-        indexToCellGroup: new Map(),
-        name: nameLabel ? nameLabel : `view_${ac.views.length}`,
-        parent: ac,
-        settings: settings,
-      });
+      ac.views.update((v) => [
+        ...v,
+        {
+          groups: signal<CellGroup[]>([]),
+          indexToCellGroup: new Map(),
+          name: nameLabel ? nameLabel : `view_${ac.views().length}`,
+          parent: ac,
+          settings: settings,
+        },
+      ]);
     }
   }
 
@@ -267,7 +270,8 @@ export class SolverStateService {
   }
 
   deleteEmptyGroups(view: GridView) {
-    view.groups
+    view
+      .groups()
       .filter((group) => group.indices.size === 0)
       .forEach((group) => this.deleteGroup(group));
   }
@@ -282,9 +286,9 @@ export class SolverStateService {
     for (let [name, solverConstraint] of solverConstraints) {
       const gridConstraint = this._constraints.get(name);
       if (gridConstraint) {
-        gridConstraint.views.forEach((view) => {
+        gridConstraint.views().forEach((view) => {
           this.deleteEmptyGroups(view);
-          view.groups.forEach((group) => {
+          view.groups().forEach((group) => {
             const code = solverConstraint.toSolverCode(
               group.indices,
               view.settings
@@ -305,7 +309,7 @@ export class SolverStateService {
   }
 
   clearConstraintViews(constraint: GridConstraint) {
-    const views = this._constraints.get(constraint.name)?.views;
+    const views = this._constraints.get(constraint.name)?.views();
     if (views?.find((view) => view === this.activeView.value())) {
       this.activeView.set(null);
       this.activeCellGroup.set(null);
@@ -321,7 +325,7 @@ export class SolverStateService {
     for (let constraintName of this.constraintProvider.getAll().keys()) {
       this._constraints.set(constraintName, {
         name: constraintName,
-        views: [],
+        views: signal<GridView[]>([]),
       });
     }
   }

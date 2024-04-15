@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ConstraintSolutionTabComponent } from '../../constraint-solution-tab/constraint-solution-tab.component';
 import { OptionsComponent } from '../../options/options.component';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
@@ -15,5 +15,6 @@ import { SolverGridComponent } from '../solver-grid/solver-grid.component';
   ],
   templateUrl: './solver-manager.component.html',
   styleUrl: './solver-manager.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverManagerComponent {}

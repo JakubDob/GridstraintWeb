@@ -1,4 +1,9 @@
-import { Component, inject, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -10,6 +15,7 @@ import { SolverStateService } from '../../../services/solver/solver-state.servic
   imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './grid-fill-button.component.html',
   styleUrl: './grid-fill-button.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridFillButtonComponent {
   private solverState = inject(SolverStateService);

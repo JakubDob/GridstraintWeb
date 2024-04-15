@@ -1,5 +1,5 @@
 <mat-accordion>
-  @for(problem of problems; track problem.solutions) {
+  @for(problem of problems(); track problem) {
   <mat-expansion-panel (closed)="onProblemClosed()">
     <mat-expansion-panel-header>
       <mat-panel-title>

@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -14,11 +14,12 @@ import { Solution, SolvedProblemInstance } from '../../../types/solver-types';
   imports: [MatExpansionModule, MatListModule, MatIconModule, MatButtonModule],
   templateUrl: './solver-solution-manager.component.html',
   styleUrl: './solver-solution-manager.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverSolutionManagerComponent {
   private solverState = inject(SolverStateService);
 
-  problems = this.solverState.getSolvedProblemInstances();
+  problems = this.solverState.solvedProblemInstances;
   selectedProblem?: SolvedProblemInstance;
   selectedSolution = new SelectionModel<Solution>();
 

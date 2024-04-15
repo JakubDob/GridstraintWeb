@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,5 +27,6 @@ import { ThemeButtonComponent } from '../theme-button/theme-button.component';
   ],
   templateUrl: './toolbar.component.html',
   styleUrl: './toolbar.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent {}
