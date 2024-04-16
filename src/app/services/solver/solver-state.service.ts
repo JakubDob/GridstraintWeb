@@ -11,6 +11,8 @@ import {
   GridConstraint,
   GridView,
   IndexedValueChange,
+  serializeConstraint,
+  SerializedSolverState,
   Solution,
   SolvedProblemInstance,
   SolverConstraint,
@@ -26,7 +28,9 @@ import { ConstraintProviderService } from '../constraint/constraint-provider.ser
 })
 export class SolverStateService {
   private readonly _eraserToggled = signal<boolean>(false);
-  private readonly _constraints: Map<string, GridConstraint> = new Map();
+  private readonly _constraints = signal<Map<string, GridConstraint>>(
+    new Map()
+  );
   private readonly _values: Map<CellIndex, string> = new Map();
 
   private readonly _solvedProblemInstances = signal<SolvedProblemInstance[]>(
@@ -47,12 +51,18 @@ export class SolverStateService {
   readonly cellValueChanged$ = this.cellValueSubject.asObservable();
 
   readonly activeConstraint = new StateVarBuilder<GridConstraint | null>(null)
-    .withSetterFn<string>((val, constraintName) => {
-      const constraint = this._constraints.get(constraintName);
-      if (constraint) {
-        this.activeView.set(null);
-        val.set(constraint);
+    .withSetterFn<string | null>((val, constraintName) => {
+      if (constraintName === null) {
+        val.set(null);
+      } else {
+        const constraint = this._constraints().get(constraintName);
+        if (constraint) {
+          val.set(constraint);
+        }
       }
+    })
+    .withSideEffectFn(() => {
+      this.activeView.set(null);
     })
     .build();
   readonly activeView = new StateVarBuilder<GridView | null>(null)
@@ -101,10 +111,7 @@ export class SolverStateService {
   readonly solvingMethod = signal<SolvingMethod>(SolvingMethod.SATISFY);
 
   readonly solvedProblemInstances = this._solvedProblemInstances.asReadonly();
-
-  get constraints(): ReadonlyMap<string, GridConstraint> {
-    return this._constraints;
-  }
+  readonly constraints = this._constraints.asReadonly();
 
   get values(): ReadonlyMap<CellIndex, string> {
     return this._values;
@@ -184,12 +191,15 @@ export class SolverStateService {
   }
 
   addNewGroup(view: GridView) {
-    view.groups().push({
-      backgroundColor: getRandomColor(),
-      indices: new Set(),
-      name: `${view.name}_group${view.groups().length}`,
-      parent: view,
-    });
+    view.groups.update((v) => [
+      ...v,
+      {
+        backgroundColor: getRandomColor(),
+        indices: new Set(),
+        name: `${view.name}_group${view.groups().length}`,
+        parent: view,
+      },
+    ]);
   }
 
   addNewGroupToActiveView(indices: Set<number>) {
@@ -201,7 +211,7 @@ export class SolverStateService {
         name: `${view.name}_group${view.groups().length}`,
         parent: view,
       };
-      view.groups().push(group);
+      view.groups.update((v) => [...v, group]);
       indices.forEach((i) => this.addCellIndexToGroup(group, i));
     }
   }
@@ -284,7 +294,7 @@ export class SolverStateService {
     const codes: string[] = [];
     const solverConstraints = this.constraintProvider.getAll();
     for (let [name, solverConstraint] of solverConstraints) {
-      const gridConstraint = this._constraints.get(name);
+      const gridConstraint = this._constraints().get(name);
       if (gridConstraint) {
         gridConstraint.views().forEach((view) => {
           this.deleteEmptyGroups(view);
@@ -309,12 +319,76 @@ export class SolverStateService {
   }
 
   clearConstraintViews(constraint: GridConstraint) {
-    const views = this._constraints.get(constraint.name)?.views();
-    if (views?.find((view) => view === this.activeView.value())) {
-      this.activeView.set(null);
-      this.activeCellGroup.set(null);
+    const cst = this._constraints().get(constraint.name);
+    if (cst) {
+      if (cst.views().find((view) => view === this.activeView.value())) {
+        this.activeView.set(null);
+        this.activeCellGroup.set(null);
+      }
+      cst.views.set([]);
     }
-    views?.splice(0, views.length);
+  }
+
+  toJSON(): string {
+    return JSON.stringify(this.serialize());
+  }
+
+  serialize(): SerializedSolverState {
+    return {
+      cols: this.gridCols(),
+      rows: this.gridRows(),
+      minValue: this.minValue(),
+      maxValue: this.maxValue(),
+      values: Array.from(this._values),
+      constraints: Array.from(this._constraints().values()).map(
+        serializeConstraint
+      ),
+    };
+  }
+
+  fromJSON(obj: string) {
+    const parsed: SerializedSolverState = JSON.parse(obj);
+    this.gridCols.set(parsed.cols);
+    this.gridRows.set(parsed.rows);
+    this.minValue.set(parsed.minValue);
+    this.maxValue.set(parsed.maxValue);
+    this._values.clear();
+    parsed.values.forEach(([k, v]) => this.setValue(k, v));
+    this.activeConstraint.set(null);
+    this._constraints.set(new Map());
+    parsed.constraints.forEach((c) => {
+      const constraint: GridConstraint = {
+        name: c.name,
+        views: signal<GridView[]>([]),
+      };
+      c.views.forEach((v) => {
+        this.addNewViewToActiveConstraint();
+        const view: GridView = {
+          parent: constraint,
+          settings: new Map(v.settings),
+          name: v.name,
+          groups: signal<CellGroup[]>([]),
+          indexToCellGroup: new Map(),
+        };
+        v.groups.forEach((g) => {
+          const group: CellGroup = {
+            parent: view,
+            name: g.name,
+            indices: new Set(g.indices),
+            backgroundColor: getRandomColor(),
+          };
+          view.groups.update((values) => [...values, group]);
+          g.indices.forEach((index) => {
+            view.indexToCellGroup.set(index, group);
+          });
+        });
+        constraint.views.update((values) => [...values, view]);
+      });
+      this._constraints.update((values) => {
+        values.set(c.name, constraint);
+        return new Map(values);
+      });
+    });
   }
 
   constructor(
@@ -323,9 +397,12 @@ export class SolverStateService {
     private defaults?: CanvasGridDefaultOptions
   ) {
     for (let constraintName of this.constraintProvider.getAll().keys()) {
-      this._constraints.set(constraintName, {
-        name: constraintName,
-        views: signal<GridView[]>([]),
+      this._constraints.update((values) => {
+        values.set(constraintName, {
+          name: constraintName,
+          views: signal<GridView[]>([]),
+        });
+        return new Map(values);
       });
     }
   }

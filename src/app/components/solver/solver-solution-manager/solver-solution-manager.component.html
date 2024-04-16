@@ -13,7 +13,7 @@
       [multiple]="false"
       (selectionChange)="onSolutionSelection($event)"
     >
-      @for(solution of problem.solutions; track solution.numberValues) {
+      @for(solution of problem.solutions; track solution) {
       <mat-list-option
         [value]="solution"
         [selected]="selectedSolution.isSelected(solution)"

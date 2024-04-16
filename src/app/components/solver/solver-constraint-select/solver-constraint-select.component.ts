@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,10 +21,16 @@ export class SolverConstraintSelectComponent {
   private constraintProvider = inject(ConstraintProviderService);
   private dialog: MatDialog = inject(MatDialog);
 
-  selectedConstraint?: GridConstraint;
-  constraints: ReadonlyMap<string, GridConstraint> =
-    this.solverState.constraints;
+  selectedConstraint: GridConstraint | null = null;
+  constraints = this.solverState.constraints;
 
+  constructor() {
+    this.solverState.activeConstraint.changes$
+      .pipe(takeUntilDestroyed())
+      .subscribe(([_, curr]) => {
+        this.selectedConstraint = curr;
+      });
+  }
   onConstraintSelectionChange() {
     if (this.selectedConstraint) {
       this.solverState.activeConstraint.set(this.selectedConstraint.name);

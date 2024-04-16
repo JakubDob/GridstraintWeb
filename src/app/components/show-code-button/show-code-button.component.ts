@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,8 +20,8 @@ import { CodeDisplayComponent } from '../code-display/code-display.component';
 })
 export class ShowCodeButtonComponent {
   dialog: MatDialog = inject(MatDialog);
-  codeIcon = 'code';
   tooltipMsg = 'Show generated code';
+  @Input() icon = 'code';
 
   onClick() {
     const dialogRef = this.dialog.open(CodeDisplayComponent);

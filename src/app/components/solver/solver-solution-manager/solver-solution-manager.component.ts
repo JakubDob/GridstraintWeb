@@ -1,5 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -18,9 +23,9 @@ import { Solution, SolvedProblemInstance } from '../../../types/solver-types';
 })
 export class SolverSolutionManagerComponent {
   private solverState = inject(SolverStateService);
+  private cdRef = inject(ChangeDetectorRef);
 
   problems = this.solverState.solvedProblemInstances;
-  selectedProblem?: SolvedProblemInstance;
   selectedSolution = new SelectionModel<Solution>();
 
   constructor() {
@@ -29,6 +34,7 @@ export class SolverSolutionManagerComponent {
       .subscribe(([_, current]) => {
         if (current === null) {
           this.selectedSolution.clear();
+          this.cdRef.markForCheck();
         }
       });
   }

@@ -1,0 +1,21 @@
+<h2 mat-dialog-title class="title">
+  <span style="width: 24px"></span>
+  <span class="title-text">Share model</span>
+  <span>
+    <button
+      mat-icon-button
+      matTooltip="{{ copyTooltipMsg }}"
+      [cdkCopyToClipboard]="link"
+    >
+      <mat-icon>content_copy</mat-icon>
+    </button>
+  </span>
+</h2>
+<div class="link-field">
+  {{ link }}
+</div>
+<mat-dialog-actions>
+  <button mat-flat-button color="primary" (click)="onCloseClick()">
+    Close
+  </button>
+</mat-dialog-actions>

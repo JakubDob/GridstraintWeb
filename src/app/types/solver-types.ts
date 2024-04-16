@@ -103,3 +103,57 @@ export type SupportedSolver = {
   version: string;
   displayName: string;
 };
+
+export type SerializedGroup = {
+  name: string;
+  indices: number[];
+};
+
+export type SerializedView = {
+  name: string;
+  groups: SerializedGroup[];
+  settings?: [string, string][];
+};
+
+export type SerializedConstraint = {
+  name: string;
+  views: SerializedView[];
+};
+
+export type SerializedSolverState = {
+  constraints: SerializedConstraint[];
+  values: [number, string][];
+  rows: number;
+  cols: number;
+  minValue: number;
+  maxValue: number;
+};
+
+export const StateFragmentKey = 'state';
+export type StateFragment = {
+  [StateFragmentKey]: string;
+};
+
+export function serializeGroup(group: CellGroup): SerializedGroup {
+  return {
+    name: group.name,
+    indices: Array.from(group.indices),
+  };
+}
+
+export function serializeView(view: GridView): SerializedView {
+  return {
+    name: view.name,
+    settings: view.settings && Array.from(view.settings),
+    groups: view.groups().map(serializeGroup),
+  };
+}
+
+export function serializeConstraint(
+  constraint: GridConstraint
+): SerializedConstraint {
+  return {
+    name: constraint.name,
+    views: constraint.views().map(serializeView),
+  };
+}

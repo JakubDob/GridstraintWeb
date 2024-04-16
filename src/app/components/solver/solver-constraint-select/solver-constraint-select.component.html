@@ -14,11 +14,11 @@
       </button>
       {{ selectedConstraint?.name }}</mat-select-trigger
     >
-    @for (constraint of constraints.values(); track constraint.name) {
+    @for (constraint of constraints().values(); track constraint.name) {
     <mat-option [value]="constraint" class="wide-text-mixin">
       <span> {{ constraint.name }} </span>
       <span>
-        @if (constraint.views.length > 0) {
+        @if (constraint.views().length > 0) {
         <button
           mat-icon-button
           (click)="onClearConstraintClick($event, constraint)"

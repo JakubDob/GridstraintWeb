@@ -1,5 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,6 +36,8 @@ import { CellGroup, GridView } from '../../../types/solver-types';
 })
 export class SolverConstraintManagerComponent {
   private solverState: SolverStateService = inject(SolverStateService);
+  private cdRef = inject(ChangeDetectorRef);
+
   activeConstraint = this.solverState.activeConstraint.value;
 
   selectedGroup = new SelectionModel<CellGroup>();
@@ -43,6 +50,7 @@ export class SolverConstraintManagerComponent {
       .subscribe(([_, current]) => {
         if (current === null) {
           this.selectedGroup.clear();
+          this.cdRef.markForCheck();
         }
       });
   }

@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { ShareStateButtonComponent } from '../share-state-button/share-state-button.component';
 import { ShowCodeButtonComponent } from '../show-code-button/show-code-button.component';
 import { GridEraserButtonComponent } from '../solver/grid-eraser-button/grid-eraser-button.component';
 import { GridFillButtonComponent } from '../solver/grid-fill-button/grid-fill-button.component';
@@ -24,6 +25,7 @@ import { ThemeButtonComponent } from '../theme-button/theme-button.component';
     GridFillButtonComponent,
     ThemeButtonComponent,
     ShowCodeButtonComponent,
+    ShareStateButtonComponent,
   ],
   templateUrl: './toolbar.component.html',
   styleUrl: './toolbar.component.scss',
