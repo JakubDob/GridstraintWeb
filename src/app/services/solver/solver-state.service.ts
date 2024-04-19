@@ -102,7 +102,7 @@ export class SolverStateService {
   readonly gridRows = signal(this.defaults?.rows ?? 9);
   readonly gridCols = signal(this.defaults?.cols ?? 9);
   readonly gridGapSize = signal(this.defaults?.gapSize ?? 1);
-  readonly gridGapColor = signal(this.defaults?.gapColor ?? 'black');
+  readonly gridGapColor = signal('black');
   readonly gridCursor = signal('pointer');
   readonly currentSolver = signal<SupportedSolver | null>(null);
   readonly findAllSolutions = signal<boolean>(false);
