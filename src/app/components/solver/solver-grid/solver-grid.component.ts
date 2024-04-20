@@ -14,8 +14,8 @@ import {
   CanvasGridState,
   drawGridLines,
   drawText,
+  GridCell,
   NgxCanvasGridComponent,
-  Rect,
 } from '@jakubdob/ngx-canvas-grid';
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 import {
@@ -180,17 +180,17 @@ export class SolverGridComponent {
     },
     {
       type: 'cell',
-      drawFn: (state, ctx, cellIndex, cellRect) => {
-        this.renderBackground(state, ctx, cellIndex, cellRect);
-        if (cellIndex === this.solverState.activeCellIndex.value()) {
-          this.renderBorder(ctx, cellRect);
+      drawFn: (state, ctx, cell) => {
+        this.renderBackground(state, ctx, cell);
+        if (cell.index === this.solverState.activeCellIndex.value()) {
+          this.renderBorder(ctx, cell);
         }
       },
     },
     {
       type: 'cell',
-      drawFn: (_, ctx, cellIndex, cellRect) => {
-        this.renderText(ctx, cellIndex, cellRect);
+      drawFn: (_, ctx, cell) => {
+        this.renderText(ctx, cell);
       },
     },
   ];
@@ -218,32 +218,31 @@ export class SolverGridComponent {
     () => this.solverState.activeSolution.value() !== null
   );
 
-  private renderBorder(ctx: CanvasRenderingContext2D, rect: Rect) {
+  private renderBorder(ctx: CanvasRenderingContext2D, cell: GridCell) {
     ctx.strokeStyle = this.selectBorder.color;
     ctx.lineWidth = this.selectBorder.width;
     ctx.strokeRect(
-      rect.x + this.selectBorder.width / 2,
-      rect.y + this.selectBorder.width / 2,
-      rect.w - this.selectBorder.width,
-      rect.h - this.selectBorder.width
+      cell.x + this.selectBorder.width / 2,
+      cell.y + this.selectBorder.width / 2,
+      cell.w - this.selectBorder.width,
+      cell.h - this.selectBorder.width
     );
   }
 
   private renderBackground(
     state: CanvasGridState,
     ctx: CanvasRenderingContext2D,
-    cellIndex: number,
-    rect: Rect
+    cell: GridCell
   ) {
     const group = this.solverState.activeView
       .value()
-      ?.indexToCellGroup.get(cellIndex);
+      ?.indexToCellGroup.get(cell.index);
     const solution = this.solverState.activeSolution.value();
     if (group) {
       if (group === this.solverState.activeCellGroup.value()) {
         ctx.fillStyle = getDistinctColor(
           360,
-          (state.elapsedTime() * 50 + rect.x + rect.y) % 360
+          (state.elapsedTime() * 50 + cell.x + cell.y) % 360
         );
       } else {
         ctx.fillStyle = group.backgroundColor;
@@ -253,30 +252,31 @@ export class SolverGridComponent {
         this.activeSolutionMaxValue - this.activeSolutionMinValue + 1;
       ctx.fillStyle = getDistinctColor(
         diff,
-        solution.numberValues[cellIndex] % diff
+        solution.numberValues[cell.index] % diff
       );
     } else {
       ctx.fillStyle = this.defaultBackgroundColor;
     }
-    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.fillRect(cell.x, cell.y, cell.w, cell.h);
   }
 
-  private renderText(
-    ctx: CanvasRenderingContext2D,
-    cellIndex: number,
-    rect: Rect
-  ) {
+  private renderText(ctx: CanvasRenderingContext2D, cell: GridCell) {
     let value = this.solverState.activeSolution.value()
-      ? this.solverState.activeSolution.value()?.stringValues.at(cellIndex)
-      : this.solverState.values.get(cellIndex);
+      ? this.solverState.activeSolution.value()?.stringValues.at(cell.index)
+      : this.solverState.values.get(cell.index);
 
     if (value) {
       drawText(
         ctx,
         value,
-        `${Math.min(rect.h, rect.w / (value.length * 0.5)) * 0.9}px monospace`,
+        `${Math.min(cell.h, cell.w / (value.length * 0.5)) * 0.9}px monospace`,
         this.valueTextStyle.color,
-        rect
+        {
+          h: cell.h,
+          w: cell.w,
+          x: cell.x,
+          y: cell.y,
+        }
       );
     }
   }
