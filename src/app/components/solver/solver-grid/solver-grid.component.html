@@ -4,9 +4,10 @@
   [rows]="rows()"
   [cols]="cols()"
   [gapSize]="gapSize()"
-  [drawFns]="drawFns"
+  [controller]="layerController"
   (singleClickCellEvent)="onClickCell($event)"
   (dragCellEvent)="onDragCell($event)"
+  (dropCellEvent)="onDropCell($event)"
   (keyDownEvent)="onKeyDown($event)"
   [style.--canvas-cursor]="gridCursor()"
 ></ngx-canvas-grid>

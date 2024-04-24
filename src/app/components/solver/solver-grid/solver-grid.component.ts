@@ -3,20 +3,22 @@ import {
   Component,
   computed,
   inject,
-  ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   CanvasGridClickEvent,
   CanvasGridDragEvent,
-  CanvasGridDrawFn,
+  CanvasGridDropEvent,
   CanvasGridState,
   drawGridLines,
   drawText,
   GridCell,
+  LayerController,
+  layerControllerBuilder,
   NgxCanvasGridComponent,
 } from '@jakubdob/ngx-canvas-grid';
+
 import { SolverStateService } from '../../../services/solver/solver-state.service';
 import {
   CellGroupAndIndex,
@@ -50,40 +52,58 @@ enum GridLayer {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolverGridComponent {
+  layerController: LayerController = layerControllerBuilder()
+    .addLayerDrawnAsWhole((state, ctx) => {
+      drawGridLines(state, ctx, 'black', 3, 3);
+    })
+    .addLayerDrawnPerCell((state, ctx, cell) => {
+      this.renderBackground(state, ctx, cell);
+      if (cell.index === this.solverState.activeCellIndex.value()) {
+        this.renderBorder(ctx, cell);
+      }
+    })
+    .addLayerDrawnPerCell((_, ctx, cell) => {
+      this.renderText(ctx, cell);
+    })
+    .build();
+
   constructor() {
     this.solverState.activeView.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.solverState.activeCellIndex.set(null);
-        this.canvasGrid.redrawLayer(GridLayer.CELLS);
+        this.layerController.redrawLayer(GridLayer.CELLS);
       });
 
     this.solverState.activeCellGroup.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(([previous, current]) => {
         previous?.indices.forEach((index) =>
-          this.canvasGrid.deleteCellIndexFromMultiFrameRedraw(
+          this.layerController.deleteCellIndexFromMultiFrameRedraw(
             index,
             GridLayer.CELLS
           )
         );
         current?.indices.forEach((index) =>
-          this.canvasGrid.addCellIndexToMultiFrameRedraw(index, GridLayer.CELLS)
+          this.layerController.addCellIndexToMultiFrameRedraw(
+            index,
+            GridLayer.CELLS
+          )
         );
         this.solverState.activeCellIndex.set(null);
-        this.canvasGrid.redrawLayer(GridLayer.CELLS);
+        this.layerController.redrawLayer(GridLayer.CELLS);
       });
 
     this.solverState.cellAddedToGroup$
       .pipe(takeUntilDestroyed())
       .subscribe((data: CellGroupAndIndex) => {
         if (data.group === this.solverState.activeCellGroup.value()) {
-          this.canvasGrid.addCellIndexToMultiFrameRedraw(
+          this.layerController.addCellIndexToMultiFrameRedraw(
             data.index,
             GridLayer.CELLS
           );
         } else {
-          this.canvasGrid.addCellIndexToSingleFrameRedraw(
+          this.layerController.addCellIndexToSingleFrameRedraw(
             data.index,
             GridLayer.CELLS
           );
@@ -93,7 +113,7 @@ export class SolverGridComponent {
     this.solverState.cellRemovedFromGroup$
       .pipe(takeUntilDestroyed())
       .subscribe((data: CellGroupAndIndex) => {
-        this.canvasGrid.deleteCellIndexFromMultiFrameRedraw(
+        this.layerController.deleteCellIndexFromMultiFrameRedraw(
           data.index,
           GridLayer.CELLS
         );
@@ -103,13 +123,13 @@ export class SolverGridComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(([previous, current]) => {
         if (current !== null) {
-          this.canvasGrid.addCellIndexToSingleFrameRedraw(
+          this.layerController.addCellIndexToSingleFrameRedraw(
             current,
             GridLayer.CELLS
           );
         }
         if (previous !== null) {
-          this.canvasGrid.addCellIndexToSingleFrameRedraw(
+          this.layerController.addCellIndexToSingleFrameRedraw(
             previous,
             GridLayer.CELLS
           );
@@ -119,13 +139,13 @@ export class SolverGridComponent {
     this.solverState.cellGroupDeleted$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        this.canvasGrid.redrawLayer(GridLayer.CELLS);
+        this.layerController.redrawLayer(GridLayer.CELLS);
       });
 
     this.solverState.cellValueChanged$
       .pipe(takeUntilDestroyed())
       .subscribe((data: IndexedValueChange<string>) => {
-        this.canvasGrid.addCellIndexToSingleFrameRedraw(
+        this.layerController.addCellIndexToSingleFrameRedraw(
           data.index,
           GridLayer.VALUES
         );
@@ -135,20 +155,18 @@ export class SolverGridComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.findMinMaxValuesInActiveSolution();
-        this.canvasGrid.redrawLayer(GridLayer.CELLS);
-        this.canvasGrid.redrawLayer(GridLayer.VALUES);
+        this.layerController.redrawLayer(GridLayer.CELLS);
+        this.layerController.redrawLayer(GridLayer.VALUES);
       });
 
     this.solverState.colorSolutions.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         if (this.solverState.activeSolution.value()) {
-          this.canvasGrid.redrawLayer(GridLayer.CELLS);
+          this.layerController.redrawLayer(GridLayer.CELLS);
         }
       });
   }
-
-  @ViewChild(NgxCanvasGridComponent) canvasGrid!: NgxCanvasGridComponent;
 
   private defaultBackgroundColor = 'lightblue';
   private selectBorder: Border = {
@@ -164,6 +182,7 @@ export class SolverGridComponent {
   private solverState = inject(SolverStateService);
   private activeSolutionMinValue = 0;
   private activeSolutionMaxValue = 0;
+  private draggingButtonId: number | null = null;
   cellWidth = this.solverState.gridCellWidth;
   cellHeight = this.solverState.gridCellHeight;
   rows = this.solverState.gridRows;
@@ -171,29 +190,6 @@ export class SolverGridComponent {
   gapSize = this.solverState.gridGapSize;
   gapColor = this.solverState.gridGapColor;
   gridCursor = this.solverState.gridCursor;
-  drawFns: CanvasGridDrawFn[] = [
-    {
-      type: 'layer',
-      drawFn: (state, ctx) => {
-        drawGridLines(state, ctx, 'black', 3, 3);
-      },
-    },
-    {
-      type: 'cell',
-      drawFn: (state, ctx, cell) => {
-        this.renderBackground(state, ctx, cell);
-        if (cell.index === this.solverState.activeCellIndex.value()) {
-          this.renderBorder(ctx, cell);
-        }
-      },
-    },
-    {
-      type: 'cell',
-      drawFn: (_, ctx, cell) => {
-        this.renderText(ctx, cell);
-      },
-    },
-  ];
 
   private cellEraserAction = computed(() => {
     if (this.solverState.eraserToggled()) {
@@ -264,7 +260,6 @@ export class SolverGridComponent {
     let value = this.solverState.activeSolution.value()
       ? this.solverState.activeSolution.value()?.stringValues.at(cell.index)
       : this.solverState.values.get(cell.index);
-
     if (value) {
       drawText(
         ctx,
@@ -283,22 +278,27 @@ export class SolverGridComponent {
 
   onClickCell(event: CanvasGridClickEvent) {
     if (event.buttonId === 0) {
-      if (this.canvasGrid.state.draggingButtonId() === null) {
-        if (this.solverState.activeCellIndex.value() === event.cellIndex) {
+      if (this.draggingButtonId === null) {
+        if (this.solverState.activeCellIndex.value() === event.cell.index) {
           this.solverState.activeCellIndex.set(null);
         } else {
-          this.solverState.activeCellIndex.set(event.cellIndex);
+          this.solverState.activeCellIndex.set(event.cell.index);
         }
       }
-      this.cellEraserAction()?.(event.cellIndex);
+      this.cellEraserAction()?.(event.cell.index);
     }
   }
 
   onDragCell(event: CanvasGridDragEvent) {
+    this.draggingButtonId = event.buttonId;
     if (event.buttonId === 0) {
-      this.solverState.activeCellIndex.set(event.to);
-      this.cellEraserAction()?.(event.to);
+      this.solverState.activeCellIndex.set(event.to.index);
+      this.cellEraserAction()?.(event.to.index);
     }
+  }
+
+  onDropCell(event: CanvasGridDropEvent) {
+    this.draggingButtonId = null;
   }
 
   onKeyDown(key: string) {
