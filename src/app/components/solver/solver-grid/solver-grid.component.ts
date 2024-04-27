@@ -10,8 +10,8 @@ import {
   CanvasGridClickEvent,
   CanvasGridDragEvent,
   CanvasGridDropEvent,
+  CanvasGridGapSizeFns,
   CanvasGridState,
-  drawGridLines,
   drawText,
   GridCell,
   LayerController,
@@ -38,9 +38,8 @@ type TextStyle = {
 };
 
 enum GridLayer {
-  LINES = 0,
-  CELLS = 1,
-  VALUES = 2,
+  CELLS = 0,
+  VALUES = 1,
 }
 
 @Component({
@@ -53,9 +52,6 @@ enum GridLayer {
 })
 export class SolverGridComponent {
   layerController: LayerController = layerControllerBuilder()
-    .addLayerDrawnAsWhole((state, ctx) => {
-      drawGridLines(state, ctx, 'black', 3, 3);
-    })
     .addLayerDrawnPerCell((state, ctx, cell) => {
       this.renderBackground(state, ctx, cell);
       if (cell.index === this.solverState.activeCellIndex.value()) {
@@ -183,11 +179,29 @@ export class SolverGridComponent {
   private activeSolutionMinValue = 0;
   private activeSolutionMaxValue = 0;
   private draggingButtonId: number | null = null;
+  private minorGapSize = 1;
   cellWidth = this.solverState.gridCellWidth;
   cellHeight = this.solverState.gridCellHeight;
   rows = this.solverState.gridRows;
   cols = this.solverState.gridCols;
-  gapSize = this.solverState.gridGapSize;
+  gapSizeFns: CanvasGridGapSizeFns = {
+    rowFn: (row) => {
+      const gap = this.solverState.gridGapSize();
+      if (row > 0 && row % 3 === 0 && row < this.rows()) {
+        return gap;
+      } else {
+        return Math.min(gap, this.minorGapSize);
+      }
+    },
+    colFn: (col) => {
+      const gap = this.solverState.gridGapSize();
+      if (col > 0 && col % 3 === 0 && col < this.cols()) {
+        return gap;
+      } else {
+        return Math.min(gap, this.minorGapSize);
+      }
+    },
+  };
   gapColor = this.solverState.gridGapColor;
   gridCursor = this.solverState.gridCursor;
 
@@ -277,19 +291,25 @@ export class SolverGridComponent {
   }
 
   onClickCell(event: CanvasGridClickEvent) {
+    if (event.target.type !== 'cell') {
+      return;
+    }
     if (event.buttonId === 0) {
       if (this.draggingButtonId === null) {
-        if (this.solverState.activeCellIndex.value() === event.cell.index) {
+        if (this.solverState.activeCellIndex.value() === event.target.index) {
           this.solverState.activeCellIndex.set(null);
         } else {
-          this.solverState.activeCellIndex.set(event.cell.index);
+          this.solverState.activeCellIndex.set(event.target.index);
         }
       }
-      this.cellEraserAction()?.(event.cell.index);
+      this.cellEraserAction()?.(event.target.index);
     }
   }
 
   onDragCell(event: CanvasGridDragEvent) {
+    if (event.to.type !== 'cell') {
+      return;
+    }
     this.draggingButtonId = event.buttonId;
     if (event.buttonId === 0) {
       this.solverState.activeCellIndex.set(event.to.index);

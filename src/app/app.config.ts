@@ -18,7 +18,6 @@ export const appConfig: ApplicationConfig = {
         cols: 9,
         rows: 9,
         gapSize: 1,
-        gapColor: 'black',
         cellWidth: 40,
         cellHeight: 40,
       },
