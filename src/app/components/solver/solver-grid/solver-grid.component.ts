@@ -42,6 +42,8 @@ enum GridLayer {
   VALUES = 1,
 }
 
+const LEFT_CLICK_BUTTON_FLAG = 1;
+
 @Component({
   selector: 'app-solver-grid',
   standalone: true,
@@ -68,48 +70,36 @@ export class SolverGridComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.solverState.activeCellIndex.set(null);
-        this.layerController.redrawLayer(GridLayer.CELLS);
+        this.layerController.drawOnce(GridLayer.CELLS);
       });
 
     this.solverState.activeCellGroup.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(([previous, current]) => {
         previous?.indices.forEach((index) =>
-          this.layerController.deleteCellIndexFromMultiFrameRedraw(
-            index,
-            GridLayer.CELLS
-          )
+          this.layerController.deleteCellDrawnPerFrame(index, GridLayer.CELLS)
         );
         current?.indices.forEach((index) =>
-          this.layerController.addCellIndexToMultiFrameRedraw(
-            index,
-            GridLayer.CELLS
-          )
+          this.layerController.drawPerFrame(index, GridLayer.CELLS)
         );
         this.solverState.activeCellIndex.set(null);
-        this.layerController.redrawLayer(GridLayer.CELLS);
+        this.layerController.drawOnce(GridLayer.CELLS);
       });
 
     this.solverState.cellAddedToGroup$
       .pipe(takeUntilDestroyed())
       .subscribe((data: CellGroupAndIndex) => {
         if (data.group === this.solverState.activeCellGroup.value()) {
-          this.layerController.addCellIndexToMultiFrameRedraw(
-            data.index,
-            GridLayer.CELLS
-          );
+          this.layerController.drawPerFrame(data.index, GridLayer.CELLS);
         } else {
-          this.layerController.addCellIndexToSingleFrameRedraw(
-            data.index,
-            GridLayer.CELLS
-          );
+          this.layerController.drawOnce(data.index, GridLayer.CELLS);
         }
       });
 
     this.solverState.cellRemovedFromGroup$
       .pipe(takeUntilDestroyed())
       .subscribe((data: CellGroupAndIndex) => {
-        this.layerController.deleteCellIndexFromMultiFrameRedraw(
+        this.layerController.deleteCellDrawnPerFrame(
           data.index,
           GridLayer.CELLS
         );
@@ -119,47 +109,38 @@ export class SolverGridComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(([previous, current]) => {
         if (current !== null) {
-          this.layerController.addCellIndexToSingleFrameRedraw(
-            current,
-            GridLayer.CELLS
-          );
+          this.layerController.drawOnce(current, GridLayer.CELLS);
         }
         if (previous !== null) {
-          this.layerController.addCellIndexToSingleFrameRedraw(
-            previous,
-            GridLayer.CELLS
-          );
+          this.layerController.drawOnce(previous, GridLayer.CELLS);
         }
       });
 
     this.solverState.cellGroupDeleted$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        this.layerController.redrawLayer(GridLayer.CELLS);
+        this.layerController.drawOnce(GridLayer.CELLS);
       });
 
     this.solverState.cellValueChanged$
       .pipe(takeUntilDestroyed())
       .subscribe((data: IndexedValueChange<string>) => {
-        this.layerController.addCellIndexToSingleFrameRedraw(
-          data.index,
-          GridLayer.VALUES
-        );
+        this.layerController.drawOnce(data.index, GridLayer.VALUES);
       });
 
     this.solverState.activeSolution.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.findMinMaxValuesInActiveSolution();
-        this.layerController.redrawLayer(GridLayer.CELLS);
-        this.layerController.redrawLayer(GridLayer.VALUES);
+        this.layerController.drawOnce(GridLayer.CELLS);
+        this.layerController.drawOnce(GridLayer.VALUES);
       });
 
     this.solverState.colorSolutions.changes$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         if (this.solverState.activeSolution.value()) {
-          this.layerController.redrawLayer(GridLayer.CELLS);
+          this.layerController.drawOnce(GridLayer.CELLS);
         }
       });
   }
@@ -294,7 +275,7 @@ export class SolverGridComponent {
     if (event.target.type !== 'cell') {
       return;
     }
-    if (event.buttonId === 0) {
+    if (event.browserEvent.button === 0) {
       if (this.draggingButtonId === null) {
         if (this.solverState.activeCellIndex.value() === event.target.index) {
           this.solverState.activeCellIndex.set(null);
@@ -310,8 +291,8 @@ export class SolverGridComponent {
     if (event.to.type !== 'cell') {
       return;
     }
-    this.draggingButtonId = event.buttonId;
-    if (event.buttonId === 0) {
+    this.draggingButtonId = event.browserEvent.buttons;
+    if (event.browserEvent.buttons & LEFT_CLICK_BUTTON_FLAG) {
       this.solverState.activeCellIndex.set(event.to.index);
       this.cellEraserAction()?.(event.to.index);
     }
