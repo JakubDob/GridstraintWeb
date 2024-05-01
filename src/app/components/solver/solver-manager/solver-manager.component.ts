@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { StateURLHelperService } from '../../../services/state-urlhelper.service';
-import { ConstraintSolutionTabComponent } from '../../constraint-solution-tab/constraint-solution-tab.component';
 import { OptionsComponent } from '../../options/options.component';
+import { SideNavComponent } from '../../side-nav/side-nav.component';
 import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { SolverGridComponent } from '../solver-grid/solver-grid.component';
 
@@ -12,7 +12,7 @@ import { SolverGridComponent } from '../solver-grid/solver-grid.component';
     SolverGridComponent,
     ToolbarComponent,
     OptionsComponent,
-    ConstraintSolutionTabComponent,
+    SideNavComponent,
   ],
   templateUrl: './solver-manager.component.html',
   styleUrl: './solver-manager.component.scss',

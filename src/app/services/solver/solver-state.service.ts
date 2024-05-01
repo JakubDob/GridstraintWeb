@@ -41,6 +41,7 @@ export class SolverStateService {
   private readonly cellRemovedFromGroupSubject =
     new Subject<CellGroupAndIndex>();
   private readonly cellValueSubject = new Subject<IndexedValueChange<string>>();
+  private readonly problemSolvedSubject = new Subject<SolvedProblemInstance>();
 
   readonly eraserToggled = this._eraserToggled.asReadonly();
 
@@ -49,6 +50,7 @@ export class SolverStateService {
   readonly cellRemovedFromGroup$ =
     this.cellRemovedFromGroupSubject.asObservable();
   readonly cellValueChanged$ = this.cellValueSubject.asObservable();
+  readonly problemSolved$ = this.problemSolvedSubject.asObservable();
 
   readonly activeConstraint = new StateVarBuilder<GridConstraint | null>(null)
     .withSetterFn<string | null>((val, constraintName) => {
@@ -112,6 +114,31 @@ export class SolverStateService {
 
   readonly solvedProblemInstances = this._solvedProblemInstances.asReadonly();
   readonly constraints = this._constraints.asReadonly();
+  readonly optionsSidenavOpened = signal<boolean>(false);
+
+  private readonly _showSolutionsSig = signal<boolean>(false);
+  private readonly _showConstraintsSig = signal<boolean>(false);
+
+  readonly showSolutions = this._showSolutionsSig.asReadonly();
+  readonly showConstraints = this._showConstraintsSig.asReadonly();
+
+  toggleShowSolutions() {
+    if (this._showSolutionsSig()) {
+      this._showSolutionsSig.set(false);
+    } else {
+      this._showConstraintsSig.set(false);
+      this._showSolutionsSig.set(true);
+    }
+  }
+
+  toggleShowConstraints() {
+    if (this._showConstraintsSig()) {
+      this._showConstraintsSig.set(false);
+    } else {
+      this._showSolutionsSig.set(false);
+      this._showConstraintsSig.set(true);
+    }
+  }
 
   get values(): ReadonlyMap<CellIndex, string> {
     return this._values;
@@ -130,6 +157,7 @@ export class SolverStateService {
 
   addSolvedProblemInstance(instance: SolvedProblemInstance) {
     this._solvedProblemInstances.update((v) => [...v, instance]);
+    this.problemSolvedSubject.next(instance);
   }
 
   deleteSolvedProblemInstance(instance: SolvedProblemInstance) {

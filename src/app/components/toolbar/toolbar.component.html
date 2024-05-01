@@ -1,10 +1,14 @@
 <mat-toolbar>
+  <app-options-sidenav-button></app-options-sidenav-button>
+  <!-- <mat-divider [vertical]="true" class="divider"></mat-divider> -->
   <app-solver-run-button></app-solver-run-button>
-  <mat-divider [vertical]="true" class="divider"></mat-divider>
   <app-grid-eraser-button></app-grid-eraser-button>
   <app-grid-tile-button></app-grid-tile-button>
   <app-grid-fill-button></app-grid-fill-button>
   <span class="spacer"></span>
+  <app-show-constraints-button></app-show-constraints-button>
+  <app-show-solutions-button></app-show-solutions-button>
+  <mat-divider [vertical]="true" class="divider"></mat-divider>
   <app-share-state-button></app-share-state-button>
   <app-show-code-button></app-show-code-button>
   <app-theme-button></app-theme-button>

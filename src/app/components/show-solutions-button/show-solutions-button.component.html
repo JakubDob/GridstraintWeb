@@ -1,0 +1,8 @@
+<button
+  mat-icon-button
+  matTooltip="{{ tooltipMsg }}"
+  (click)="onClick()"
+  [ngClass]="{ 'new-solution': hasNewSolution() }"
+>
+  <mat-icon> {{ icon }} </mat-icon>
+</button>

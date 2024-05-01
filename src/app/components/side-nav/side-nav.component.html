@@ -1,0 +1,19 @@
+<mat-sidenav-container class="container">
+  <mat-sidenav mode="side" [(opened)]="leftOpened">
+    <app-options></app-options>
+  </mat-sidenav>
+  <mat-sidenav mode="side" position="end" [opened]="rightOpened()">
+    <div class="right-nav-container" [class.hide]="!state.showConstraints()">
+      <app-solver-constraint-select></app-solver-constraint-select>
+      <app-solver-constraint-manager
+        class="right-nav-overflow"
+      ></app-solver-constraint-manager>
+    </div>
+    <div class="right-nav-container" [class.hide]="!state.showSolutions()">
+      <app-solver-solution-manager></app-solver-solution-manager>
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content class="content">
+    <app-solver-grid></app-solver-grid>
+  </mat-sidenav-content>
+</mat-sidenav-container>

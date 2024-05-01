@@ -1,0 +1,23 @@
+.container {
+  height: calc(100% - 64px);
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+}
+
+.right-nav-container {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-height: 100%;
+}
+
+.right-nav-overflow {
+  overflow-y: auto;
+}
+
+.hide {
+  display: none;
+}

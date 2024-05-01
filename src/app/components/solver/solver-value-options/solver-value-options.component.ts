@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   NgZone,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -26,7 +27,7 @@ export class SolverValueOptionsComponent {
   private ngZone = inject(NgZone);
   minValue: number = this.solverState.minValue();
   maxValue: number = this.solverState.maxValue();
-  selectedCellValue?: number;
+  selectedCellValue = signal<number | undefined>(undefined);
   disableInput: boolean = true;
   ereaseValues = false;
 
@@ -46,13 +47,13 @@ export class SolverValueOptionsComponent {
             this.disableInput = false;
             const value = this.solverState.values.get(current);
             if (value) {
-              this.selectedCellValue = parseInt(value);
+              this.selectedCellValue.set(parseInt(value));
             } else {
-              this.selectedCellValue = undefined;
+              this.selectedCellValue.set(undefined);
             }
           } else {
             this.disableInput = true;
-            this.selectedCellValue = undefined;
+            this.selectedCellValue.set(undefined);
           }
         });
       });
@@ -61,9 +62,9 @@ export class SolverValueOptionsComponent {
       .subscribe((data: IndexedValueChange<string>) => {
         this.ngZone.run(() => {
           if (data.current !== null) {
-            this.selectedCellValue = parseInt(data.current);
+            this.selectedCellValue.set(parseInt(data.current));
           } else {
-            this.selectedCellValue = undefined;
+            this.selectedCellValue.set(undefined);
           }
         });
       });
