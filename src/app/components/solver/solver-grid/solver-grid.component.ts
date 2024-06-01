@@ -54,13 +54,15 @@ const LEFT_CLICK_BUTTON_FLAG = 1;
 })
 export class SolverGridComponent {
   layerController: LayerController = layerControllerBuilder()
-    .addLayerDrawnPerCell((state, ctx, cell) => {
+    .addLayerDrawnPerCell((ctx, cell, state) => {
+      ctx.clearRect(cell.x, cell.y, cell.w, cell.h);
       this.renderBackground(state, ctx, cell);
       if (cell.index === this.solverState.activeCellIndex.value()) {
         this.renderBorder(ctx, cell);
       }
     })
-    .addLayerDrawnPerCell((_, ctx, cell) => {
+    .addLayerDrawnPerCell((ctx, cell) => {
+      ctx.clearRect(cell.x, cell.y, cell.w, cell.h);
       this.renderText(ctx, cell);
     })
     .build();
@@ -259,7 +261,7 @@ export class SolverGridComponent {
       drawText(
         ctx,
         value,
-        `${Math.min(cell.h, cell.w / (value.length * 0.5)) * 0.9}px monospace`,
+        `${Math.min(cell.h, cell.w / (value.length * 0.5)) * 0.9}px roboto`,
         this.valueTextStyle.color,
         {
           h: cell.h,
