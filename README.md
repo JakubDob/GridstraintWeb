@@ -1,27 +1,64 @@
 # GridstraintWeb
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.1.0.
+Define custom constraints on a grid and solve it using a constraint solver.
 
-## Development server
+### Constraints
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+The application currently supports `alldifferent`, `count` and `value`.
 
-## Code scaffolding
+### Design
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+The grid consists of three main parts:
 
-## Build
+- `constraints`
+- `views`
+- `groups`
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Each constraint can encompass multiple views. Each view consists of zero or more groups.
+One view is displayed at a time. A group is a subset of the grid's indices.
 
-## Running unit tests
+### Example
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+A `9x9 sudoku` solver can be constructed with:
 
-## Running end-to-end tests
+- A single `alldifferent` constraint
+- Values ranging from 1 to 9
+- Three views consisting of:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+  - 3 \* (3 $\times$ 3) square groups
+  - 9 \* (9 $\times$ 1) vertical groups
+  - 9 \* (1 $\times$ 9) horizontal groups
 
-## Further help
+This flexibility allows for creation of custom rules on non-standard sized boards.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+`N-queens problem`, assuming a square n $\times$ n board, can be modeled as:
+
+- A single `count` constraint
+- Values equal 0 or 1
+- Four views consisting of:
+  - (9 \* n) vertical groups with `exactly` n-1 zeros and 1 one value
+  - (9 \* n) horizontal groups with `exactly` n-1 zeros and 1 one value
+  - (9 \* n) left diagonal groups with `at most` 1 one value
+  - (9 \* n) right diagonal groups with `at most` 1 one value
+
+### Custom grid sizes
+
+Specify from 1 to 50 rows and columns.
+
+## Tools
+
+### Tiling
+
+The tiling feature allows the currently selected group pattern to be replicated across the entire view, creating a series of similar groups.
+
+### Fill
+
+The fill tool adds all unassigned cells to the currently selected group, facilitating quick group creation.
+
+### Model generation
+
+Grid constraints are transformed into an exportable [MiniZinc](https://www.minizinc.org/) model. It can also be shared through the url.
+
+### In-Browser solving
+
+The generated model is solved directly in the browser using [the emscripten version of MiniZinc](https://github.com/MiniZinc/minizinc-js).
