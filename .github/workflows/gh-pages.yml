@@ -28,7 +28,7 @@ jobs:
           path: dist/gridstraint-web/browser/
 
   deploy:
-    name: Deploy demo project
+    name: Deploy app
     needs: [build]
     runs-on: ubuntu-latest
     permissions:
