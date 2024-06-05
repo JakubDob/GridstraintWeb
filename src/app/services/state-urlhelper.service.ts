@@ -13,17 +13,11 @@ export class StateURLHelperService {
   private urlBase: string;
 
   constructor() {
-    this.urlBase = this.document.location.hostname;
-    if (
-      this.document.location.port &&
-      this.document.location.port !== '80' &&
-      this.document.location.port !== '443'
-    ) {
-      this.urlBase += `:${this.document.location.port}`;
-    }
+    this.urlBase =
+      this.document.location.origin + this.document.location.pathname;
   }
   generateLink() {
-    return `${this.urlBase}/#${StateFragmentKey}=${encodeURIComponent(
+    return `${this.urlBase}#${StateFragmentKey}=${encodeURIComponent(
       this.solverState.toJSON()
     )}`;
   }
